@@ -1,0 +1,18 @@
+#+TITLE: Deriving temperatures from line widths using MUSE spectra
+#+AUTHOR: William Henney
+#+EMAIL: will@henney.org
+
+* Plan
+It looks like the sigmas that I measured from MUSE are good enough to find kinematic temperatures.  I want to break this out from the main MUSE project, so that it doesn't get dragged down by the general inertia
+
+
+
+* Org export options
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: noexport
+#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline
+#+OPTIONS: author:t broken-links:nil c:nil creator:nil
+#+OPTIONS: d:(not "LOGBOOK") date:t e:t email:nil f:t inline:t num:nil
+#+OPTIONS: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
+#+OPTIONS: timestamp:t title:t toc:nil todo:t |:t
