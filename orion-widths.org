@@ -69,6 +69,118 @@ N_II-6583
 /Users/will/Dropbox/OrionMuse/LineMaps/linesum-N_II-6583.fits -> data/linesum-N_II-6583.fits
 :END:
 
+
+* Making correlations
+
+** Variance vs variance
+#+name: var-var-plot
+#+header: :var XLINE="He_I-6678" YLINE="H_I-6563"
+#+header: :var SIGMIN=35 SIGMAX=60 GAMMA=0.5 NBIN=50 BMIN=2.0
+#+BEGIN_SRC python :results file :return plotfile
+  import numpy as np
+  from astropy.io import fits
+  from matplotlib import pyplot as plt
+  from matplotlib.ticker import (MultipleLocator, LogLocator, 
+				 MaxNLocator, FormatStrFormatter)
+  import seaborn as sns
+
+  plotfile = 'hist-var-{}-var-{}.pdf'.format(XLINE, YLINE)
+
+  xsig = fits.open('data/sigma-{}.fits'.format(XLINE))[0].data
+  ysig = fits.open('data/sigma-{}.fits'.format(YLINE))[0].data
+
+  xb = fits.open('data/linesum-{}.fits'.format(XLINE))[0].data
+  yb = fits.open('data/linesum-{}.fits'.format(YLINE))[0].data
+
+  w = xb + yb
+  m = (np.isfinite(xsig + ysig + w) &
+       (xb > BMIN*np.nanmedian(xb)) &
+       (yb > BMIN*np.nanmedian(yb)))
+
+  msg = '{} valid pixels'.format(m.sum())
+  xmin, xmax = ymin, ymax = SIGMIN**2, SIGMAX**2
+
+  H, xedges, yedges = np.histogram2d(xsig[m]**2, ysig[m]**2, 
+                                     bins=[NBIN, NBIN],
+                                     range=[[xmin, xmax], [ymin, ymax]],
+                                     weights=w[m]
+                                    )
+
+
+  sns.set(style='white', font_scale=1.5, color_codes=True)
+  fig, ax = plt.subplots(figsize=(5, 5))
+  # sns.distplot(xsig[m]**2, kde=False, hist_kws={'range': [0, 1.5*SIGMAX**2]})
+  ax.imshow((H.T)**(1.0/GAMMA), 
+            extent=[xmin, xmax, ymin, ymax], 
+            interpolation='none', aspect='auto', 
+            origin='lower', cmap=plt.cm.gray_r)
+  ax.plot([xmin, xmax], [ymin, ymax], 'r', alpha=0.3, lw=2)
+  ax.text(0.5, 0.98, msg, ha='center', va='top',
+          fontsize='x-small',
+          transform=ax.transAxes)
+  ax.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+  ax.xaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
+  ax.yaxis.set_major_formatter(FormatStrFormatter('%d'))
+  ax.yaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
+  ax.set(
+      xlabel='Variance ' + XLINE,
+      ylabel='Variance ' + YLINE,
+      xlim=[xmin, xmax],
+      ylim=[ymin, ymax],
+  )
+  fig.tight_layout()
+  fig.savefig(plotfile)
+#+END_SRC
+
+#+RESULTS: var-var-plot
+[[file:hist-var-He_I-6678-var-H_I-6563.pdf]]
+
+#+call: var-var-plot(XLINE="He_I-5876", YLINE="H_I-4861", SIGMIN=45, SIGMAX=80)
+
+#+RESULTS:
+[[file:hist-var-He_I-5876-var-H_I-4861.pdf]]
+
+#+call: var-var-plot(XLINE="O_III-5007", YLINE="H_I-4861", SIGMIN=55, SIGMAX=85)
+
+#+RESULTS:
+[[file:hist-var-O_III-5007-var-H_I-4861.pdf]]
+
+#+call: var-var-plot(XLINE="O_III-4959", YLINE="H_I-4861", SIGMIN=55, SIGMAX=85)
+
+#+RESULTS:
+[[file:hist-var-O_III-4959-var-H_I-4861.pdf]]
+
+#+call: var-var-plot(XLINE="N_II-6583", YLINE="H_I-6563", SIGMIN=40, SIGMAX=55)
+
+#+RESULTS:
+[[file:hist-var-N_II-6583-var-H_I-6563.pdf]]
+
+#+call: var-var-plot(XLINE="N_II-6548", YLINE="H_I-6563", SIGMIN=40, SIGMAX=55)
+
+#+RESULTS:
+[[file:hist-var-N_II-6548-var-H_I-6563.pdf]]
+
+#+call: var-var-plot(XLINE="N_II-6548", YLINE="N_II-6583", SIGMIN=40, SIGMAX=55)
+
+#+RESULTS:
+file:hist-var-N_II-6548-var-N_II-6583.pdf
+
+#+call: var-var-plot(XLINE="H_I-9015", YLINE="H_I-9229", SIGMIN=27, SIGMAX=47)
+
+#+RESULTS:
+[[file:hist-var-H_I-9015-var-H_I-9229.pdf]]
+
+#+call: var-var-plot(XLINE="S_III-9069", YLINE="H_I-9229", SIGMIN=27, SIGMAX=47)
+
+#+RESULTS:
+[[file:hist-var-S_III-9069-var-H_I-9229.pdf]]
+
+#+call: var-var-plot(XLINE="S_III-9069", YLINE="H_I-9015", SIGMIN=27, SIGMAX=47)
+
+#+RESULTS:
+[[file:hist-var-S_III-9069-var-H_I-9015.pdf]]
+
+
 * Comments on individual line sets
 
 ** H alpha and [N II]
