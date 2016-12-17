@@ -2,16 +2,115 @@
 #+AUTHOR: William Henney
 #+EMAIL: will@henney.org
 
+
 * Plan
 It looks like the sigmas that I measured from MUSE are good enough to find kinematic temperatures.  I want to break this out from the main MUSE project, so that it doesn't get dragged down by the general inertia
 
 
+* Marshalling the image files
++ We need the mean, sigma, and linesum for all the lines of interest
++ Note that the whole =data/= folder is omitted from the git repo, because it is too large (0.5 GB at the start)
+#+name: line-ids
+| He_I-5876  |
+| He_I-6678  |
+| H_I-4861   |
+| H_I-6563   |
+| H_I-9015   |
+| H_I-9229   |
+| O_III-4959 |
+| O_III-5007 |
+| S_III-9069 |
+| N_II-6548  |
+| N_II-6583  |
 
-* Org export options
+#+header: 
+#+BEGIN_SRC shell :results drawer :var LINES=line-ids
+  SRCDIR=~/Dropbox/OrionMuse/LineMaps
+  for line in ${LINES[*]}; do
+      echo $line
+      cp -va $SRCDIR/{mean,linesum}-$line.fits data
+  done
+#+END_SRC
+
+#+RESULTS:
+:RESULTS:
+He_I-5876
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-He_I-5876.fits -> data/mean-He_I-5876.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/linesum-He_I-5876.fits -> data/linesum-He_I-5876.fits
+He_I-6678
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-He_I-6678.fits -> data/mean-He_I-6678.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/linesum-He_I-6678.fits -> data/linesum-He_I-6678.fits
+H_I-4861
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-H_I-4861.fits -> data/mean-H_I-4861.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/linesum-H_I-4861.fits -> data/linesum-H_I-4861.fits
+H_I-6563
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-H_I-6563.fits -> data/mean-H_I-6563.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/linesum-H_I-6563.fits -> data/linesum-H_I-6563.fits
+H_I-9015
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-H_I-9015.fits -> data/mean-H_I-9015.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/linesum-H_I-9015.fits -> data/linesum-H_I-9015.fits
+H_I-9229
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-H_I-9229.fits -> data/mean-H_I-9229.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/linesum-H_I-9229.fits -> data/linesum-H_I-9229.fits
+O_III-4959
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-O_III-4959.fits -> data/mean-O_III-4959.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/linesum-O_III-4959.fits -> data/linesum-O_III-4959.fits
+O_III-5007
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-O_III-5007.fits -> data/mean-O_III-5007.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/linesum-O_III-5007.fits -> data/linesum-O_III-5007.fits
+S_III-9069
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-S_III-9069.fits -> data/mean-S_III-9069.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/linesum-S_III-9069.fits -> data/linesum-S_III-9069.fits
+N_II-6548
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-N_II-6548.fits -> data/mean-N_II-6548.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/linesum-N_II-6548.fits -> data/linesum-N_II-6548.fits
+N_II-6583
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-N_II-6583.fits -> data/mean-N_II-6583.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/linesum-N_II-6583.fits -> data/linesum-N_II-6583.fits
+:END:
+
+* Comments on individual line sets
+
+** H alpha and [N II]
++ We have both the 6583 and 6548 lines
+  + 6583 is slightly broader
+  + Probably because of C II blend
+** H beta and [O III]
++ The instrumental width is a bit larger here
++ But it seems very stable
++ We have the two [O III] lines so we can interpolate to H beta
+** H alpha and He I 6678
++ This might be the ideal combination
++ The overlap in the emission zones is much higher than with [N II] or [O III]
+  + And the T-dependence of the emissivity is very similar
+  + Need to check Ne dependence
+  + We could check this by doing correlations in surface brightness and looking at velocity difference
++ It is a singlet, so there is no fine-structure broadening
++ The difference in atomic weights is a little bit less
+  + H \to He : 1 - 1/4 = 0.75
+  + H \to O : 1 - 1/16 = 0.9375
+  + But that is hardly significant
++ Also s/n is a bit lower since it is a weaker line
+  + But a little binning would fix that
+** H beta and He I 5876
++ This is not so good since He line is triplet
++ But it will be a good independent test
+
+** Redder lines
++ We have H I 9229
+  + Intrumental linewidth is a bit better
+  + But only strong option for comparison is [S III] 9069
+  + Which would need correcting for both [S II] /and/ [S IV]
+  + But we could also use H I 9015 to interpolate to 9069 position
++ Then there is the [Ar III] 7137, 7751
+  + Which could maybe be compared with H I 8438, etc
+  + But it isn't really until we get to H I 8750 that the data quality is any good
+  + And that is a a long way from [Ar III]
+* Org export options                              :noexport:
 #+LANGUAGE: en
 #+SELECT_TAGS: export
 #+EXCLUDE_TAGS: noexport
-#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline
+#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:{} arch:headline
 #+OPTIONS: author:t broken-links:nil c:nil creator:nil
 #+OPTIONS: d:(not "LOGBOOK") date:t e:t email:nil f:t inline:t num:nil
 #+OPTIONS: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
