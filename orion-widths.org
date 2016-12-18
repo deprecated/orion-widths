@@ -6,7 +6,49 @@
 * Plan
 It looks like the sigmas that I measured from MUSE are good enough to find kinematic temperatures.  I want to break this out from the main MUSE project, so that it doesn't get dragged down by the general inertia
 
+** Status and next steps 
 
+*** [2016-12-18 Sun] After first day
+
+**** Achievements after first day
+1. We have all the data we need (not in github repo because of size)
+2. Made variance-variance plots
+   - These are looking promising, but see [[id:48FD212E-DCA9-4E16-A187-0A8B6467B402][Issues]] below
+3. Made mean-mean plots
+   - 
+4. Started on delta-delta plots on velocity differences between different lines
+**** Issues after first day
+:PROPERTIES:
+:ID:       48FD212E-DCA9-4E16-A187-0A8B6467B402
+:END:
+1. Instrumental variance /might/ vary noticeably even over small wavelength ranges
+   - E.g., 5007 to 4959
+   - This makes it difficult to estimate instrumental width for H beta, since we are extrapolating 5007 --> 4959 ----> 4861
+   - On the other hand, perhaps 4959 has a blend
+2. We expect about \Delta\sigma^{2} \approx 100 for the thermal broadening, and about 150 for the variation in non-thermal broadening 
+   - But we are observing a total spread of
+     - \Delta\sigma^{2} \approx 2000 for [O III] *!!!*
+     - \Delta\sigma^{2} \approx 500 for [N II]
+     - \Delta\sigma^{2} \approx 700 for He I 6678
+     - \Delta\sigma^{2} \approx 500 for He I 5876
+     - \Delta\sigma^{2} \approx 200 for [S III] 9069 (which is finally getting down to the non-thermal broadening)
+   - So it looks like maybe [N II] to H alpha might be the best bet after all
+   - And this means that the pattern noise (or maybe even shot noise) contributes \Delta\sigma^{2} = 400 \to 1600
+     - But much of that is correlated.  For instance if we look at [O III] 4959 vs 5007, then the decorrelated width is only \approx 100 km^{2}/s^{2}
+     - Although that is still large compared with GDH08, where we were getting decorrelated width of 10 to 50 km^{2}/s^{2}
+   - Note that the total instrumental \sigma^{2} varies as
+     - \approx 1400 in IR
+     - \approx 2400 in red
+     - \approx 5000 in blue
+   - So we have \Delta\sigma^{2} / \sigma^{2} in the range 0.15 \to 0.4 from IR to blue
+   - The fractional variations in the instrumental width are 0.5 times that
+     - so less than 10% in the IR and red
+     - but 20% in the blue
+**** What to do now (after first day)?
+1. Spatial binning of maps
+   - Just port over the stuff from [[file:~/Dropbox/OrionMuse/]]
+2. Modify plotting programs to do multiple binning levels
+3. Instead of var-var, we could try dvar vs var, which would eliminate the slope to first order
 * Marshalling the image files
 + We need the mean, sigma, and linesum for all the lines of interest
 + Note that the whole =data/= folder is omitted from the git repo, because it is too large (0.5 GB at the start)
@@ -69,6 +111,14 @@ N_II-6583
 /Users/will/Dropbox/OrionMuse/LineMaps/linesum-N_II-6583.fits -> data/linesum-N_II-6583.fits
 :END:
 
+
+
+* TODO Question of blends
++ Which lines may be affected by blends
+
+
+* TODO Spatial binning of maps
++ Hopefully tighten up all the correlations
 
 * Making correlations
 
