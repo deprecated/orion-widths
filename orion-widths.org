@@ -72,6 +72,137 @@ N_II-6583
 
 * Making correlations
 
+** Mean vs mean
+#+name: mean-mean-plot
+#+header: :var XLINE="He_I-6678" YLINE="H_I-6563"
+#+header: :var VMIN=20 VMAX=40 GAMMA=0.5 NBIN=50 BMIN=2.0
+#+BEGIN_SRC python :results file :return plotfile
+  import numpy as np
+  from astropy.io import fits
+  from matplotlib import pyplot as plt
+  from matplotlib.ticker import (MultipleLocator, LogLocator, 
+				 MaxNLocator, FormatStrFormatter)
+  import seaborn as sns
+
+  plotfile = 'hist-mean-{}-mean-{}.pdf'.format(XLINE, YLINE)
+
+  xv = fits.open('data/mean-{}.fits'.format(XLINE))[0].data
+  yv = fits.open('data/mean-{}.fits'.format(YLINE))[0].data
+
+  xb = fits.open('data/linesum-{}.fits'.format(XLINE))[0].data
+  yb = fits.open('data/linesum-{}.fits'.format(YLINE))[0].data
+
+  w = xb + yb
+  m = (np.isfinite(xv + yv + w) &
+       (xb > BMIN*np.nanmedian(xb)) &
+       (yb > BMIN*np.nanmedian(yb)))
+
+  msg = '{} valid pixels'.format(m.sum())
+  xmin, xmax = ymin, ymax = VMIN, VMAX
+
+  H, xedges, yedges = np.histogram2d(xv[m], yv[m], 
+                                     bins=[NBIN, NBIN],
+                                     range=[[xmin, xmax], [ymin, ymax]],
+                                     weights=w[m]
+                                    )
+
+
+  sns.set(style='white', font_scale=1.5, color_codes=True)
+  fig, ax = plt.subplots(figsize=(5, 5))
+  # sns.distplot(xsig[m]**2, kde=False, hist_kws={'range': [0, 1.5*SIGMAX**2]})
+  ax.imshow((H.T)**(1.0/GAMMA), 
+            extent=[xmin, xmax, ymin, ymax], 
+            interpolation='none', aspect='auto', 
+            origin='lower', cmap=plt.cm.gray_r)
+  ax.plot([xmin, xmax], [ymin, ymax], 'r', alpha=0.3, lw=2)
+  ax.text(0.5, 0.98, msg, ha='center', va='top',
+          fontsize='x-small',
+          transform=ax.transAxes)
+  ax.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+  ax.xaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
+  ax.yaxis.set_major_formatter(FormatStrFormatter('%d'))
+  ax.yaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
+  ax.set(
+      xlabel='Mean velocity ' + XLINE,
+      ylabel='Mean velocity ' + YLINE,
+      xlim=[xmin, xmax],
+      ylim=[ymin, ymax],
+  )
+  fig.tight_layout()
+  fig.savefig(plotfile)
+#+END_SRC
+
+#+RESULTS: mean-mean-plot
+[[file:hist-mean-He_I-6678-mean-H_I-6563.pdf]]
+
+#+call: mean-mean-plot(XLINE="He_I-5876", YLINE="H_I-4861")
+
+#+RESULTS:
+[[file:hist-mean-He_I-5876-mean-H_I-4861.pdf]]
+
+This must be affected by the fine structure, which perhaps is not taken into account in the He I 5876 rest wavelength
+
+#+call: mean-mean-plot(XLINE="O_III-5007", YLINE="H_I-4861", VMIN=15, VMAX=35)
+
+#+RESULTS:
+[[file:hist-mean-O_III-5007-mean-H_I-4861.pdf]]
+
+I am having to shift 5 km/s to the blue for these lines, which suggests an issue with the wavelength calibration between the blue and the red
+
+#+call: mean-mean-plot(XLINE="O_III-4959", YLINE="H_I-4861", VMIN=15, VMAX=35)
+
+#+RESULTS:
+[[file:hist-mean-O_III-4959-mean-H_I-4861.pdf]]
+
+#+call: mean-mean-plot(XLINE="O_III-5007", YLINE="O_III-4959", VMIN=15, VMAX=35)
+
+#+RESULTS:
+[[file:hist-mean-O_III-5007-mean-O_III-4959.pdf]]
+
+Strangely, there is a slight difference between these two.  Is it a calibration error, or is one of them blended with something?
+
+#+call: mean-mean-plot(XLINE="N_II-6548", YLINE="H_I-6563", VMIN=20, VMAX=40)
+
+#+RESULTS:
+[[file:hist-mean-N_II-6548-mean-H_I-6563.pdf]]
+
+#+call: mean-mean-plot(XLINE="N_II-6583", YLINE="H_I-6563", VMIN=25, VMAX=45)
+
+#+RESULTS:
+[[file:hist-mean-N_II-6583-mean-H_I-6563.pdf]]
+
+#+call: mean-mean-plot(XLINE="N_II-6583", YLINE="N_II-6548", VMIN=25, VMAX=45)
+
+#+RESULTS:
+[[file:hist-mean-N_II-6583-mean-N_II-6548.pdf]]
+
+This shows a 3 km/s offset between the two [N II] lines, which is unfortunate
+
+#+call: mean-mean-plot(XLINE="H_I-9015", YLINE="H_I-9229", VMIN=20, VMAX=40)
+
+#+RESULTS:
+[[file:hist-mean-H_I-9015-mean-H_I-9229.pdf]]
+
+This has about a 1 km/s offset between the two lines
+
+#+call: mean-mean-plot(XLINE="S_III-9069", YLINE="H_I-9229", VMIN=20, VMAX=40)
+
+#+RESULTS:
+[[file:hist-mean-S_III-9069-mean-H_I-9229.pdf]]
+
+This shows [S III] as being slightly redder than H I. 
+
+#+call: mean-mean-plot(XLINE="H_I-6563", YLINE="H_I-9229", VMIN=20, VMAX=40)
+
+#+RESULTS:
+[[file:hist-mean-H_I-6563-mean-H_I-9229.pdf]]
+
+#+call: mean-mean-plot(XLINE="H_I-6563", YLINE="H_I-4861", VMIN=20, VMAX=40)
+
+#+RESULTS:
+[[file:hist-mean-H_I-6563-mean-H_I-4861.pdf]]
+
+
 ** Variance vs variance
 #+name: var-var-plot
 #+header: :var XLINE="He_I-6678" YLINE="H_I-6563"
@@ -150,6 +281,14 @@ N_II-6583
 #+RESULTS:
 [[file:hist-var-O_III-4959-var-H_I-4861.pdf]]
 
+#+call: var-var-plot(XLINE="O_III-5007", YLINE="O_III-4959", SIGMIN=55, SIGMAX=85)
+
+#+RESULTS:
+[[file:hist-var-O_III-5007-var-O_III-4959.pdf]]
+
+This shows a small offset, presumably due to increase in the instrumental width going from 5007 to 4959
+
+
 #+call: var-var-plot(XLINE="N_II-6583", YLINE="H_I-6563", SIGMIN=40, SIGMAX=55)
 
 #+RESULTS:
@@ -164,6 +303,8 @@ N_II-6583
 
 #+RESULTS:
 file:hist-var-N_II-6548-var-N_II-6583.pdf
+
+This is disappointingly circular, implying that the sigma variations for the weaker 6548 line are overwhelmingly due to noise.  *Maybe binning might help*
 
 #+call: var-var-plot(XLINE="H_I-9015", YLINE="H_I-9229", SIGMIN=27, SIGMAX=47)
 
