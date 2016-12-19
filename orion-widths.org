@@ -15,8 +15,11 @@ It looks like the sigmas that I measured from MUSE are good enough to find kinem
 2. Made variance-variance plots
    - These are looking promising, but see [[id:48FD212E-DCA9-4E16-A187-0A8B6467B402][Issues]] below
 3. Made mean-mean plots
-   - 
-4. Started on delta-delta plots on velocity differences between different lines
+   - The absolute velocities seem a bit higgledy-piggledy
+   - Also, they are all on the red side.
+     - Probably because they are lacking the heliocentric correction
+4. Started on delta-delta plots, showing velocity differences between different lines
+   - Once this is tightened up via rebinning, I am hopeful that we will be able to find the mean slope
 **** Issues after first day
 :PROPERTIES:
 :ID:       48FD212E-DCA9-4E16-A187-0A8B6467B402
@@ -45,10 +48,13 @@ It looks like the sigmas that I measured from MUSE are good enough to find kinem
      - so less than 10% in the IR and red
      - but 20% in the blue
 **** What to do now (after first day)?
-1. Spatial binning of maps
+1. [X] Try and sort out the fixed patter noise
+   - This is in separate project: [[file:~/Dropbox/depattern-maps/][file:~/Dropbox/depattern-maps/]]
+   - And it seems to work
+2. Spatial binning of maps
    - Just port over the stuff from [[file:~/Dropbox/OrionMuse/]]
-2. Modify plotting programs to do multiple binning levels
-3. Instead of var-var, we could try dvar vs var, which would eliminate the slope to first order
+3. Modify plotting programs to do multiple binning levels
+4. Instead of var-var, we could try dvar vs var, which would eliminate the slope to first order
 * Marshalling the image files
 + We need the mean, sigma, and linesum for all the lines of interest
 + Note that the whole =data/= folder is omitted from the git repo, because it is too large (0.5 GB at the start)
@@ -70,45 +76,57 @@ It looks like the sigmas that I measured from MUSE are good enough to find kinem
   SRCDIR=~/Dropbox/OrionMuse/LineMaps
   for line in ${LINES[*]}; do
       echo $line
-      cp -va $SRCDIR/{mean,linesum}-$line.fits data
+      cp -va $SRCDIR/linesum-$line.fits data
+      cp -va $SRCDIR/{mean,sigma}-$line-patfixx.fits data
   done
 #+END_SRC
 
 #+RESULTS:
 :RESULTS:
 He_I-5876
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-He_I-5876.fits -> data/mean-He_I-5876.fits
 /Users/will/Dropbox/OrionMuse/LineMaps/linesum-He_I-5876.fits -> data/linesum-He_I-5876.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-He_I-5876-patfixx.fits -> data/mean-He_I-5876-patfixx.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/sigma-He_I-5876-patfixx.fits -> data/sigma-He_I-5876-patfixx.fits
 He_I-6678
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-He_I-6678.fits -> data/mean-He_I-6678.fits
 /Users/will/Dropbox/OrionMuse/LineMaps/linesum-He_I-6678.fits -> data/linesum-He_I-6678.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-He_I-6678-patfixx.fits -> data/mean-He_I-6678-patfixx.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/sigma-He_I-6678-patfixx.fits -> data/sigma-He_I-6678-patfixx.fits
 H_I-4861
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-H_I-4861.fits -> data/mean-H_I-4861.fits
 /Users/will/Dropbox/OrionMuse/LineMaps/linesum-H_I-4861.fits -> data/linesum-H_I-4861.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-H_I-4861-patfixx.fits -> data/mean-H_I-4861-patfixx.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/sigma-H_I-4861-patfixx.fits -> data/sigma-H_I-4861-patfixx.fits
 H_I-6563
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-H_I-6563.fits -> data/mean-H_I-6563.fits
 /Users/will/Dropbox/OrionMuse/LineMaps/linesum-H_I-6563.fits -> data/linesum-H_I-6563.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-H_I-6563-patfixx.fits -> data/mean-H_I-6563-patfixx.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/sigma-H_I-6563-patfixx.fits -> data/sigma-H_I-6563-patfixx.fits
 H_I-9015
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-H_I-9015.fits -> data/mean-H_I-9015.fits
 /Users/will/Dropbox/OrionMuse/LineMaps/linesum-H_I-9015.fits -> data/linesum-H_I-9015.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-H_I-9015-patfixx.fits -> data/mean-H_I-9015-patfixx.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/sigma-H_I-9015-patfixx.fits -> data/sigma-H_I-9015-patfixx.fits
 H_I-9229
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-H_I-9229.fits -> data/mean-H_I-9229.fits
 /Users/will/Dropbox/OrionMuse/LineMaps/linesum-H_I-9229.fits -> data/linesum-H_I-9229.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-H_I-9229-patfixx.fits -> data/mean-H_I-9229-patfixx.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/sigma-H_I-9229-patfixx.fits -> data/sigma-H_I-9229-patfixx.fits
 O_III-4959
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-O_III-4959.fits -> data/mean-O_III-4959.fits
 /Users/will/Dropbox/OrionMuse/LineMaps/linesum-O_III-4959.fits -> data/linesum-O_III-4959.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-O_III-4959-patfixx.fits -> data/mean-O_III-4959-patfixx.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/sigma-O_III-4959-patfixx.fits -> data/sigma-O_III-4959-patfixx.fits
 O_III-5007
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-O_III-5007.fits -> data/mean-O_III-5007.fits
 /Users/will/Dropbox/OrionMuse/LineMaps/linesum-O_III-5007.fits -> data/linesum-O_III-5007.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-O_III-5007-patfixx.fits -> data/mean-O_III-5007-patfixx.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/sigma-O_III-5007-patfixx.fits -> data/sigma-O_III-5007-patfixx.fits
 S_III-9069
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-S_III-9069.fits -> data/mean-S_III-9069.fits
 /Users/will/Dropbox/OrionMuse/LineMaps/linesum-S_III-9069.fits -> data/linesum-S_III-9069.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-S_III-9069-patfixx.fits -> data/mean-S_III-9069-patfixx.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/sigma-S_III-9069-patfixx.fits -> data/sigma-S_III-9069-patfixx.fits
 N_II-6548
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-N_II-6548.fits -> data/mean-N_II-6548.fits
 /Users/will/Dropbox/OrionMuse/LineMaps/linesum-N_II-6548.fits -> data/linesum-N_II-6548.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-N_II-6548-patfixx.fits -> data/mean-N_II-6548-patfixx.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/sigma-N_II-6548-patfixx.fits -> data/sigma-N_II-6548-patfixx.fits
 N_II-6583
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-N_II-6583.fits -> data/mean-N_II-6583.fits
 /Users/will/Dropbox/OrionMuse/LineMaps/linesum-N_II-6583.fits -> data/linesum-N_II-6583.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/mean-N_II-6583-patfixx.fits -> data/mean-N_II-6583-patfixx.fits
+/Users/will/Dropbox/OrionMuse/LineMaps/sigma-N_II-6583-patfixx.fits -> data/sigma-N_II-6583-patfixx.fits
 :END:
 
 
@@ -138,7 +156,7 @@ I don't think this has been applied yet
 ** Mean vs mean
 #+name: mean-mean-plot
 #+header: :var XLINE="He_I-6678" YLINE="H_I-6563"
-#+header: :var VMIN=20 VMAX=40 GAMMA=0.5 NBIN=50 BMIN=2.0
+#+header: :var VMIN=20 VMAX=40 GAMMA=1.0 NBIN=100 BMIN=1.0
 #+BEGIN_SRC python :results file :return plotfile
   import numpy as np
   from astropy.io import fits
@@ -147,10 +165,10 @@ I don't think this has been applied yet
 				 MaxNLocator, FormatStrFormatter)
   import seaborn as sns
 
-  plotfile = 'hist-mean-{}-mean-{}.pdf'.format(XLINE, YLINE)
+  plotfile = 'hist-mean-{}-mean-{}.png'.format(XLINE, YLINE)
 
-  xv = fits.open('data/mean-{}.fits'.format(XLINE))[0].data
-  yv = fits.open('data/mean-{}.fits'.format(YLINE))[0].data
+  xv = fits.open('data/mean-{}-patfixx.fits'.format(XLINE))[0].data
+  yv = fits.open('data/mean-{}-patfixx.fits'.format(YLINE))[0].data
 
   xb = fits.open('data/linesum-{}.fits'.format(XLINE))[0].data
   yb = fits.open('data/linesum-{}.fits'.format(YLINE))[0].data
@@ -192,84 +210,84 @@ I don't think this has been applied yet
       ylim=[ymin, ymax],
   )
   fig.tight_layout()
-  fig.savefig(plotfile)
+  fig.savefig(plotfile, dpi=200)
 #+END_SRC
 
 #+RESULTS: mean-mean-plot
-[[file:hist-mean-He_I-6678-mean-H_I-6563.pdf]]
+[[file:hist-mean-He_I-6678-mean-H_I-6563.png]]
 
 #+call: mean-mean-plot(XLINE="He_I-5876", YLINE="H_I-4861")
 
 #+RESULTS:
-[[file:hist-mean-He_I-5876-mean-H_I-4861.pdf]]
+[[file:hist-mean-He_I-5876-mean-H_I-4861.png]]
 
-This must be affected by the fine structure, which perhaps is not taken into account in the He I 5876 rest wavelength
+This must be affected by the fine structure, which perhaps is not taken into account in the He I 5876 rest wavelength. On the other hand, it is the Hb line that shows the greatest deviation from expectations (see next pair)
 
 #+call: mean-mean-plot(XLINE="O_III-5007", YLINE="H_I-4861", VMIN=15, VMAX=35)
 
 #+RESULTS:
-[[file:hist-mean-O_III-5007-mean-H_I-4861.pdf]]
+[[file:hist-mean-O_III-5007-mean-H_I-4861.png]]
 
 I am having to shift 5 km/s to the blue for these lines, which suggests an issue with the wavelength calibration between the blue and the red
 
 #+call: mean-mean-plot(XLINE="O_III-4959", YLINE="H_I-4861", VMIN=15, VMAX=35)
 
 #+RESULTS:
-[[file:hist-mean-O_III-4959-mean-H_I-4861.pdf]]
+[[file:hist-mean-O_III-4959-mean-H_I-4861.png]]
 
 #+call: mean-mean-plot(XLINE="O_III-5007", YLINE="O_III-4959", VMIN=15, VMAX=35)
 
 #+RESULTS:
-[[file:hist-mean-O_III-5007-mean-O_III-4959.pdf]]
+[[file:hist-mean-O_III-5007-mean-O_III-4959.png]]
 
 Strangely, there is a slight difference between these two.  Is it a calibration error, or is one of them blended with something?
 
-#+call: mean-mean-plot(XLINE="N_II-6548", YLINE="H_I-6563", VMIN=20, VMAX=40)
+#+call: mean-mean-plot(XLINE="N_II-6548", YLINE="H_I-6563", VMIN=25, VMAX=45)
 
 #+RESULTS:
-[[file:hist-mean-N_II-6548-mean-H_I-6563.pdf]]
+[[file:hist-mean-N_II-6548-mean-H_I-6563.png]]
 
 #+call: mean-mean-plot(XLINE="N_II-6583", YLINE="H_I-6563", VMIN=25, VMAX=45)
 
 #+RESULTS:
-[[file:hist-mean-N_II-6583-mean-H_I-6563.pdf]]
+[[file:hist-mean-N_II-6583-mean-H_I-6563.png]]
 
 #+call: mean-mean-plot(XLINE="N_II-6583", YLINE="N_II-6548", VMIN=25, VMAX=45)
 
 #+RESULTS:
-[[file:hist-mean-N_II-6583-mean-N_II-6548.pdf]]
+[[file:hist-mean-N_II-6583-mean-N_II-6548.png]]
 
-This shows a 3 km/s offset between the two [N II] lines, which is unfortunate
+This shows a 3 km/s offset between the two [N II] lines, which is unfortunate, but it is smaller than the offset between either line and Ha.  And we can interpolate between the two, I suppose
 
 #+call: mean-mean-plot(XLINE="H_I-9015", YLINE="H_I-9229", VMIN=20, VMAX=40)
 
 #+RESULTS:
-[[file:hist-mean-H_I-9015-mean-H_I-9229.pdf]]
+[[file:hist-mean-H_I-9015-mean-H_I-9229.png]]
 
 This has about a 1 km/s offset between the two lines
 
 #+call: mean-mean-plot(XLINE="S_III-9069", YLINE="H_I-9229", VMIN=20, VMAX=40)
 
 #+RESULTS:
-[[file:hist-mean-S_III-9069-mean-H_I-9229.pdf]]
+[[file:hist-mean-S_III-9069-mean-H_I-9229.png]]
 
 This shows [S III] as being slightly redder than H I. 
 
 #+call: mean-mean-plot(XLINE="H_I-6563", YLINE="H_I-9229", VMIN=20, VMAX=40)
 
 #+RESULTS:
-[[file:hist-mean-H_I-6563-mean-H_I-9229.pdf]]
+[[file:hist-mean-H_I-6563-mean-H_I-9229.png]]
 
 #+call: mean-mean-plot(XLINE="H_I-6563", YLINE="H_I-4861", VMIN=20, VMAX=40)
 
 #+RESULTS:
-[[file:hist-mean-H_I-6563-mean-H_I-4861.pdf]]
+[[file:hist-mean-H_I-6563-mean-H_I-4861.png]]
 
 
 ** Variance vs variance
 #+name: var-var-plot
 #+header: :var XLINE="He_I-6678" YLINE="H_I-6563"
-#+header: :var SIGMIN=35 SIGMAX=60 GAMMA=0.5 NBIN=50 BMIN=2.0
+#+header: :var SIGMIN=35 SIGMAX=60 GAMMA=1.0 NBIN=100 BMIN=1.0
 #+BEGIN_SRC python :results file :return plotfile
   import numpy as np
   from astropy.io import fits
@@ -278,10 +296,10 @@ This shows [S III] as being slightly redder than H I.
 				 MaxNLocator, FormatStrFormatter)
   import seaborn as sns
 
-  plotfile = 'hist-var-{}-var-{}.pdf'.format(XLINE, YLINE)
+  plotfile = 'hist-var-{}-var-{}.png'.format(XLINE, YLINE)
 
-  xsig = fits.open('data/sigma-{}.fits'.format(XLINE))[0].data
-  ysig = fits.open('data/sigma-{}.fits'.format(YLINE))[0].data
+  xsig = fits.open('data/sigma-{}-patfixx.fits'.format(XLINE))[0].data
+  ysig = fits.open('data/sigma-{}-patfixx.fits'.format(YLINE))[0].data
 
   xb = fits.open('data/linesum-{}.fits'.format(XLINE))[0].data
   yb = fits.open('data/linesum-{}.fits'.format(YLINE))[0].data
@@ -323,31 +341,31 @@ This shows [S III] as being slightly redder than H I.
       ylim=[ymin, ymax],
   )
   fig.tight_layout()
-  fig.savefig(plotfile)
+  fig.savefig(plotfile, dpi=200)
 #+END_SRC
 
 #+RESULTS: var-var-plot
-[[file:hist-var-He_I-6678-var-H_I-6563.pdf]]
+[[file:hist-var-He_I-6678-var-H_I-6563.png]]
 
 #+call: var-var-plot(XLINE="He_I-5876", YLINE="H_I-4861", SIGMIN=45, SIGMAX=80)
 
 #+RESULTS:
-[[file:hist-var-He_I-5876-var-H_I-4861.pdf]]
+[[file:hist-var-He_I-5876-var-H_I-4861.png]]
 
-#+call: var-var-plot(XLINE="O_III-5007", YLINE="H_I-4861", SIGMIN=55, SIGMAX=85)
-
-#+RESULTS:
-[[file:hist-var-O_III-5007-var-H_I-4861.pdf]]
-
-#+call: var-var-plot(XLINE="O_III-4959", YLINE="H_I-4861", SIGMIN=55, SIGMAX=85)
+#+call: var-var-plot(XLINE="O_III-5007", YLINE="H_I-4861", SIGMIN=63, SIGMAX=75)
 
 #+RESULTS:
-[[file:hist-var-O_III-4959-var-H_I-4861.pdf]]
+[[file:hist-var-O_III-5007-var-H_I-4861.png]]
 
-#+call: var-var-plot(XLINE="O_III-5007", YLINE="O_III-4959", SIGMIN=55, SIGMAX=85)
+#+call: var-var-plot(XLINE="O_III-4959", YLINE="H_I-4861", SIGMIN=63, SIGMAX=75)
 
 #+RESULTS:
-[[file:hist-var-O_III-5007-var-O_III-4959.pdf]]
+[[file:hist-var-O_III-4959-var-H_I-4861.png]]
+
+#+call: var-var-plot(XLINE="O_III-5007", YLINE="O_III-4959", SIGMIN=63, SIGMAX=75)
+
+#+RESULTS:
+[[file:hist-var-O_III-5007-var-O_III-4959.png]]
 
 This shows a small offset, presumably due to increase in the instrumental width going from 5007 to 4959
 
@@ -355,34 +373,34 @@ This shows a small offset, presumably due to increase in the instrumental width 
 #+call: var-var-plot(XLINE="N_II-6583", YLINE="H_I-6563", SIGMIN=40, SIGMAX=55)
 
 #+RESULTS:
-[[file:hist-var-N_II-6583-var-H_I-6563.pdf]]
+[[file:hist-var-N_II-6583-var-H_I-6563.png]]
 
 #+call: var-var-plot(XLINE="N_II-6548", YLINE="H_I-6563", SIGMIN=40, SIGMAX=55)
 
 #+RESULTS:
-[[file:hist-var-N_II-6548-var-H_I-6563.pdf]]
+[[file:hist-var-N_II-6548-var-H_I-6563.png]]
 
 #+call: var-var-plot(XLINE="N_II-6548", YLINE="N_II-6583", SIGMIN=40, SIGMAX=55)
 
 #+RESULTS:
-file:hist-var-N_II-6548-var-N_II-6583.pdf
+[[file:hist-var-N_II-6548-var-N_II-6583.png]]
 
 This is disappointingly circular, implying that the sigma variations for the weaker 6548 line are overwhelmingly due to noise.  *Maybe binning might help*
 
 #+call: var-var-plot(XLINE="H_I-9015", YLINE="H_I-9229", SIGMIN=27, SIGMAX=47)
 
 #+RESULTS:
-[[file:hist-var-H_I-9015-var-H_I-9229.pdf]]
+[[file:hist-var-H_I-9015-var-H_I-9229.png]]
 
 #+call: var-var-plot(XLINE="S_III-9069", YLINE="H_I-9229", SIGMIN=27, SIGMAX=47)
 
 #+RESULTS:
-[[file:hist-var-S_III-9069-var-H_I-9229.pdf]]
+[[file:hist-var-S_III-9069-var-H_I-9229.png]]
 
 #+call: var-var-plot(XLINE="S_III-9069", YLINE="H_I-9015", SIGMIN=27, SIGMAX=47)
 
 #+RESULTS:
-[[file:hist-var-S_III-9069-var-H_I-9015.pdf]]
+[[file:hist-var-S_III-9069-var-H_I-9015.png]]
 
 
 
@@ -402,7 +420,7 @@ This is disappointingly circular, implying that the sigma variations for the wea
 #+name: dv-dv-plot
 #+header: :var XLINE1="H_I-4861" XLINE2="O_III-5007"
 #+header: :var YLINE1="N_II-6583" YLINE2="H_I-6563"
-#+header: :var VMIN=-4 VMAX=7 GAMMA=1.0 NBIN=50 BMIN=2.0
+#+header: :var VMIN=-4 VMAX=7 GAMMA=1.0 NBIN=100 BMIN=1.0
 #+BEGIN_SRC python :results file :return plotfile
   import numpy as np
   from astropy.io import fits
@@ -413,14 +431,14 @@ This is disappointingly circular, implying that the sigma variations for the wea
 
   wavs = [s.split('-')[-1] for s in
           [XLINE1, XLINE2, YLINE1, YLINE2]]
-  plotfile = 'hist-dv-{}-{}-dv-{}-{}.pdf'.format(*wavs)
+  plotfile = 'hist-dv-{}-{}-dv-{}-{}.png'.format(*wavs)
 
-  xv1 = fits.open('data/mean-{}.fits'.format(XLINE1))[0].data
-  xv2 = fits.open('data/mean-{}.fits'.format(XLINE2))[0].data
+  xv1 = fits.open('data/mean-{}-patfixx.fits'.format(XLINE1))[0].data
+  xv2 = fits.open('data/mean-{}-patfixx.fits'.format(XLINE2))[0].data
   xv = xv1 - xv2
 
-  yv1 = fits.open('data/mean-{}.fits'.format(YLINE1))[0].data
-  yv2 = fits.open('data/mean-{}.fits'.format(YLINE2))[0].data
+  yv1 = fits.open('data/mean-{}-patfixx.fits'.format(YLINE1))[0].data
+  yv2 = fits.open('data/mean-{}-patfixx.fits'.format(YLINE2))[0].data
   yv = yv1 - yv2
 
   xb1 = fits.open('data/linesum-{}.fits'.format(XLINE1))[0].data
@@ -469,11 +487,11 @@ This is disappointingly circular, implying that the sigma variations for the wea
       ylim=[ymin, ymax],
   )
   fig.tight_layout()
-  fig.savefig(plotfile)
+  fig.savefig(plotfile, dpi=200)
 #+END_SRC
 
 #+RESULTS: dv-dv-plot
-[[file:hist-dv-4861-5007-dv-6583-6563.pdf]]
+[[file:hist-dv-4861-5007-dv-6583-6563.png]]
 
 * Comments on individual line sets
 
