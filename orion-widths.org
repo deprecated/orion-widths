@@ -117,6 +117,19 @@ N_II-6583
 + Which lines may be affected by blends
 
 
+* TODO Heliocentric correction
+I don't think this has been applied yet
+
+* TODO How to deal with the pattern noise
++ This should be removed before the binning
++ I have tried to do this before
+  + See the =-patfix= files in the =LineMaps= folder
+  + Was done by [[file:~/Dropbox/OrionMuse/de-pattern-noise.py]]
+  + Described in [[id:7E273615-5455-41BA-8606-458A9A2E35DF][Dealing with the pattern noise in the velocity maps]]
+  + This worked with chunks of 290x290 pixels and found the average x profile and y profile pattern, averaged over all the chunks
+    + I am cleaning that up now, since it looks like it works pretty well
++ [ ] It may be a good idea to combine this real-space approach by some sort of retouching in Fourier space
+
 * TODO Spatial binning of maps
 + Hopefully tighten up all the correlations
 
