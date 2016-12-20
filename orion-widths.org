@@ -89,7 +89,20 @@ It looks like the sigmas that I measured from MUSE are good enough to find kinem
    - Just port over the stuff from [[file:~/Dropbox/OrionMuse/]]
 3. [X] Modify plotting programs to do multiple binning levels
 4. Instead of var-var, we could try dvar vs var, which would eliminate the slope to first order
-* Marshalling the image files
+* Marshalling the data files
+:PROPERTIES:
+:ID:       A2E5E90B-A8C7-49FB-8C12-1A6B6BDD6029
+:END:
+** MUSE spectra from nil server
+#+BEGIN_SRC sh :results verbatim
+  date
+  rsync -azP nil:/fs/nil/other0/will/orion-muse/LineMaps/spec1d-*-????.tab spec-data
+#+END_SRC
+
+#+RESULTS:
+: Tue Dec 20 20:51:08 GMT 2016
+: receiving incremental file list
+
 ** MUSE maps from the external disk
 + We want copies of these so we can disconnect the disk and still work
 + We need the mean, sigma, and linesum for all the lines of interest
@@ -533,6 +546,63 @@ CLOSED: [2016-12-20 Tue 16:34]
 * TODO Image plots
 + Show the effects of the pattern removal and binning
 + Show the high-velocity jets
+
+* Spectral plots
++ Plots of the 1-D spectra that we have copied to the =spec-data/= folder
+
+#+name: rest-wavs
+| H_I-4861   | 4861.32 |
+| O_III-4959 | 4958.91 |
+| O_III-5007 | 5006.84 |
+| He_I-5876  | 5875.62 |
+| N_II-6548  | 6548.05 |
+| H_I-6563   | 6562.79 |
+| N_II-6583  | 6583.45 |
+| He_I-6678  | 6678.15 |
+| H_I-9015   | 9014.91 |
+| S_III-9069 | 9068.90 |
+| H_I-9229   | 9229.01 |
+
+#+BEGIN_SRC python :var LINES=rest-wavs :results file :return figfile
+  from astropy.table import Table
+  from matplotlib import pyplot as plt
+  import seaborn as sns
+  import numpy as np
+  from matplotlib.ticker import MultipleLocator, MaxNLocator
+
+  sns.set(style='white')
+  nlines = len(LINES)
+  figfile = 'line-profile-wav-grid.pdf'
+
+  fig, axes = plt.subplots(4, 3, figsize=(10, 8))
+  for [line_id, wav0], ax in zip(LINES, axes.flat[:nlines]):
+      specfile = 'spec-data/spec1d-{}.tab'.format(line_id)
+      tab = Table.read(specfile, format='ascii.tab')
+      label = line_id.split('-')[0].replace('_', ' ') + ' {:.2f}'.format(wav0)
+      ax.plot(tab['wav'], 1e-5*tab['flux'], label=label)
+      ax.axvline(wav0, ls='--', color='k')
+      ax.legend(loc='upper left')
+      ax.set(
+          xlim=[tab['wav'].min(), tab['wav'].max()],
+          ylim=[0, None],
+      )
+      ax.xaxis.set_major_locator(MultipleLocator(5))
+      ax.yaxis.set_major_locator(MaxNLocator(7))
+
+  axes[-1, 0].set(
+      xlabel='Wavelength, Angstrom', ylabel='Flux',
+  )
+  # We don't use the axis in the bottom right corner, so turn everything off
+  axes[-1, -1].set_frame_on(False)
+  axes[-1, -1].xaxis.set_visible(False)
+  axes[-1, -1].yaxis.set_visible(False)
+
+  fig.tight_layout()
+  fig.savefig(figfile)
+#+END_SRC
+
+#+RESULTS:
+[[file:line-profile-wav-grid.pdf]]
 
 * Making correlations
 :PROPERTIES:
