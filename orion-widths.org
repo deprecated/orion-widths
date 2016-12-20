@@ -48,7 +48,7 @@ It looks like the sigmas that I measured from MUSE are good enough to find kinem
      - so less than 10% in the IR and red
      - but 20% in the blue
 **** What to do now (after first day)?
-1. [X] Try and sort out the fixed patter noise
+1. [X] Try and sort out the fixed pattern noise
    - This is in separate project: [[file:~/Dropbox/depattern-maps/][file:~/Dropbox/depattern-maps/]]
    - And it seems to work
 2. Spatial binning of maps
@@ -76,57 +76,355 @@ It looks like the sigmas that I measured from MUSE are good enough to find kinem
   SRCDIR=~/Dropbox/OrionMuse/LineMaps
   for line in ${LINES[*]}; do
       echo $line
-      cp -va $SRCDIR/linesum-$line.fits data
-      cp -va $SRCDIR/{mean,sigma}-$line-patfixx.fits data
+      rsync -avP $SRCDIR/linesum-$line.fits data
+      rsync -avP $SRCDIR/linesum-$line-bin???.fits data
+      rsync -avP $SRCDIR/{mean,sigma}-$line-patfixx*.fits data
   done
 #+END_SRC
 
 #+RESULTS:
 :RESULTS:
 He_I-5876
-/Users/will/Dropbox/OrionMuse/LineMaps/linesum-He_I-5876.fits -> data/linesum-He_I-5876.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-He_I-5876-patfixx.fits -> data/mean-He_I-5876-patfixx.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/sigma-He_I-5876-patfixx.fits -> data/sigma-He_I-5876-patfixx.fits
+sending incremental file list
+
+sent 69 bytes  received 12 bytes  162.00 bytes/sec
+total size is 10,431,360  speedup is 128,782.22
+sending incremental file list
+linesum-He_I-5876-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  174.91MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-He_I-5876-bin002.fits
+         32,768   0%  132.78kB/s    0:05:31       44,049,600 100%   88.44MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-He_I-5876-bin004.fits
+         32,768   0%   67.23kB/s    0:10:54       44,049,600 100%   58.84MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-He_I-5876-bin008.fits
+         32,768   0%   44.76kB/s    0:16:23       44,049,600 100%   43.94MB/s    0:00:00 (xfr#4, to-chk=5/9)
+linesum-He_I-5876-bin016.fits
+         32,768   0%   33.44kB/s    0:21:56        7,176,192  16%    6.84MB/s    0:00:05       44,049,600 100%   35.07MB/s    0:00:01 (xfr#5, to-chk=4/9)
+linesum-He_I-5876-bin032.fits
+         32,768   0%  160.00kB/s    0:04:35       44,049,600 100%   95.47MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-He_I-5876-bin064.fits
+         32,768   0%   72.56kB/s    0:10:06       44,049,600 100%   62.42MB/s    0:00:00 (xfr#7, to-chk=2/9)
+linesum-He_I-5876-bin128.fits
+         32,768   0%   47.48kB/s    0:15:27       44,049,600 100%   46.01MB/s    0:00:00 (xfr#8, to-chk=1/9)
+linesum-He_I-5876-bin256.fits
+         32,768   0%   35.01kB/s    0:20:57       15,892,480  36%   15.16MB/s    0:00:01       44,049,600 100%   36.47MB/s    0:00:01 (xfr#9, to-chk=0/9)
+
+sent 396,543,750 bytes  received 187 bytes  158,617,574.80 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 392 bytes  received 12 bytes  808.00 bytes/sec
+total size is 834,606,720  speedup is 2,065,858.22
 He_I-6678
-/Users/will/Dropbox/OrionMuse/LineMaps/linesum-He_I-6678.fits -> data/linesum-He_I-6678.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-He_I-6678-patfixx.fits -> data/mean-He_I-6678-patfixx.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/sigma-He_I-6678-patfixx.fits -> data/sigma-He_I-6678-patfixx.fits
+sending incremental file list
+
+sent 69 bytes  received 12 bytes  162.00 bytes/sec
+total size is 10,431,360  speedup is 128,782.22
+sending incremental file list
+linesum-He_I-6678-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  172.75MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-He_I-6678-bin002.fits
+         32,768   0%  131.15kB/s    0:05:35       44,049,600 100%   87.52MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-He_I-6678-bin004.fits
+         32,768   0%   66.39kB/s    0:11:03       44,049,600 100%   58.59MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-He_I-6678-bin008.fits
+         32,768   0%   44.57kB/s    0:16:27       44,049,600 100%   43.90MB/s    0:00:00 (xfr#4, to-chk=5/9)
+linesum-He_I-6678-bin016.fits
+         32,768   0%   33.37kB/s    0:21:59        6,324,224  14%    6.03MB/s    0:00:06       44,049,600 100%   35.15MB/s    0:00:01 (xfr#5, to-chk=4/9)
+linesum-He_I-6678-bin032.fits
+         32,768   0%  162.44kB/s    0:04:30       44,049,600 100%   97.47MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-He_I-6678-bin064.fits
+         32,768   0%   74.07kB/s    0:09:54       44,049,600 100%   62.79MB/s    0:00:00 (xfr#7, to-chk=2/9)
+linesum-He_I-6678-bin128.fits
+         32,768   0%   47.76kB/s    0:15:21       44,049,600 100%   45.96MB/s    0:00:00 (xfr#8, to-chk=1/9)
+linesum-He_I-6678-bin256.fits
+         32,768   0%   34.97kB/s    0:20:58       15,433,728  35%   14.72MB/s    0:00:01       44,049,600 100%   36.43MB/s    0:00:01 (xfr#9, to-chk=0/9)
+
+sent 396,543,746 bytes  received 187 bytes  113,298,266.57 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 392 bytes  received 12 bytes  808.00 bytes/sec
+total size is 834,606,720  speedup is 2,065,858.22
 H_I-4861
-/Users/will/Dropbox/OrionMuse/LineMaps/linesum-H_I-4861.fits -> data/linesum-H_I-4861.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-H_I-4861-patfixx.fits -> data/mean-H_I-4861-patfixx.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/sigma-H_I-4861-patfixx.fits -> data/sigma-H_I-4861-patfixx.fits
+sending incremental file list
+
+sent 68 bytes  received 12 bytes  160.00 bytes/sec
+total size is 10,431,360  speedup is 130,392.00
+sending incremental file list
+linesum-H_I-4861-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  172.75MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-H_I-4861-bin002.fits
+         32,768   0%  131.15kB/s    0:05:35       44,049,600 100%   86.80MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-H_I-4861-bin004.fits
+         32,768   0%   65.98kB/s    0:11:07       44,049,600 100%   58.18MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-H_I-4861-bin008.fits
+         32,768   0%   44.26kB/s    0:16:34       44,049,600 100%   43.71MB/s    0:00:00 (xfr#4, to-chk=5/9)
+linesum-H_I-4861-bin016.fits
+         32,768   0%   33.26kB/s    0:22:03        6,029,312  13%    5.75MB/s    0:00:06       44,049,600 100%   35.15MB/s    0:00:01 (xfr#5, to-chk=4/9)
+linesum-H_I-4861-bin032.fits
+         32,768   0%  162.44kB/s    0:04:30       44,049,600 100%   96.79MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-H_I-4861-bin064.fits
+         32,768   0%   73.56kB/s    0:09:58       44,049,600 100%   62.42MB/s    0:00:00 (xfr#7, to-chk=2/9)
+linesum-H_I-4861-bin128.fits
+         32,768   0%   47.48kB/s    0:15:27       44,049,600 100%   46.16MB/s    0:00:00 (xfr#8, to-chk=1/9)
+linesum-H_I-4861-bin256.fits
+         32,768   0%   35.13kB/s    0:20:53       15,564,800  35%   14.84MB/s    0:00:01       44,049,600 100%   36.47MB/s    0:00:01 (xfr#9, to-chk=0/9)
+
+sent 396,543,745 bytes  received 187 bytes  158,617,572.80 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 390 bytes  received 12 bytes  804.00 bytes/sec
+total size is 834,606,720  speedup is 2,076,136.12
 H_I-6563
-/Users/will/Dropbox/OrionMuse/LineMaps/linesum-H_I-6563.fits -> data/linesum-H_I-6563.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-H_I-6563-patfixx.fits -> data/mean-H_I-6563-patfixx.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/sigma-H_I-6563-patfixx.fits -> data/sigma-H_I-6563-patfixx.fits
+sending incremental file list
+
+sent 68 bytes  received 12 bytes  160.00 bytes/sec
+total size is 10,431,360  speedup is 130,392.00
+sending incremental file list
+linesum-H_I-6563-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  174.18MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-H_I-6563-bin002.fits
+         32,768   0%  132.23kB/s    0:05:32       44,049,600 100%   85.04MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-H_I-6563-bin004.fits
+         32,768   0%   64.52kB/s    0:11:22       44,049,600 100%   56.16MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-H_I-6563-bin008.fits
+         32,768   0%   42.72kB/s    0:17:10       43,810,816  99%   41.78MB/s    0:00:00       44,049,600 100%   42.01MB/s    0:00:01 (xfr#4, to-chk=5/9)
+linesum-H_I-6563-bin016.fits
+         32,768   0%   15.62MB/s    0:00:02       44,049,600 100%  175.04MB/s    0:00:00 (xfr#5, to-chk=4/9)
+linesum-H_I-6563-bin032.fits
+         32,768   0%  132.78kB/s    0:05:31       44,049,600 100%   87.34MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-H_I-6563-bin064.fits
+         32,768   0%   66.39kB/s    0:11:03       44,049,600 100%   58.26MB/s    0:00:00 (xfr#7, to-chk=2/9)
+linesum-H_I-6563-bin128.fits
+         32,768   0%   44.32kB/s    0:16:33       44,049,600 100%   43.67MB/s    0:00:00 (xfr#8, to-chk=1/9)
+linesum-H_I-6563-bin256.fits
+         32,768   0%   33.23kB/s    0:22:04        5,963,776  13%    5.69MB/s    0:00:06       44,049,600 100%   34.92MB/s    0:00:01 (xfr#9, to-chk=0/9)
+
+sent 396,543,745 bytes  received 187 bytes  158,617,572.80 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 390 bytes  received 12 bytes  804.00 bytes/sec
+total size is 834,606,720  speedup is 2,076,136.12
 H_I-9015
-/Users/will/Dropbox/OrionMuse/LineMaps/linesum-H_I-9015.fits -> data/linesum-H_I-9015.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-H_I-9015-patfixx.fits -> data/mean-H_I-9015-patfixx.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/sigma-H_I-9015-patfixx.fits -> data/sigma-H_I-9015-patfixx.fits
+sending incremental file list
+
+sent 68 bytes  received 12 bytes  160.00 bytes/sec
+total size is 10,431,360  speedup is 130,392.00
+sending incremental file list
+linesum-H_I-9015-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  174.18MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-H_I-9015-bin002.fits
+         32,768   0%  132.23kB/s    0:05:32       44,049,600 100%   87.88MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-H_I-9015-bin004.fits
+         32,768   0%   66.81kB/s    0:10:58       44,049,600 100%   58.67MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-H_I-9015-bin008.fits
+         32,768   0%   44.57kB/s    0:16:27       44,049,600 100%   44.08MB/s    0:00:00 (xfr#4, to-chk=5/9)
+linesum-H_I-9015-bin016.fits
+         32,768   0%   33.54kB/s    0:21:52        7,962,624  18%    7.59MB/s    0:00:04       44,049,600 100%   35.21MB/s    0:00:01 (xfr#5, to-chk=4/9)
+linesum-H_I-9015-bin032.fits
+         32,768   0%  164.10kB/s    0:04:28       44,049,600 100%   96.57MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-H_I-9015-bin064.fits
+         32,768   0%   73.39kB/s    0:09:59       44,049,600 100%   62.70MB/s    0:00:00 (xfr#7, to-chk=2/9)
+linesum-H_I-9015-bin128.fits
+         32,768   0%   47.69kB/s    0:15:22       44,049,600 100%   46.42MB/s    0:00:00 (xfr#8, to-chk=1/9)
+linesum-H_I-9015-bin256.fits
+         32,768   0%   35.32kB/s    0:20:46       17,268,736  39%   16.47MB/s    0:00:01       44,049,600 100%   36.98MB/s    0:00:01 (xfr#9, to-chk=0/9)
+
+sent 396,543,745 bytes  received 187 bytes  158,617,572.80 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 390 bytes  received 12 bytes  804.00 bytes/sec
+total size is 834,606,720  speedup is 2,076,136.12
 H_I-9229
-/Users/will/Dropbox/OrionMuse/LineMaps/linesum-H_I-9229.fits -> data/linesum-H_I-9229.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-H_I-9229-patfixx.fits -> data/mean-H_I-9229-patfixx.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/sigma-H_I-9229-patfixx.fits -> data/sigma-H_I-9229-patfixx.fits
+sending incremental file list
+
+sent 68 bytes  received 12 bytes  160.00 bytes/sec
+total size is 10,431,360  speedup is 130,392.00
+sending incremental file list
+linesum-H_I-9229-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  182.51MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-H_I-9229-bin002.fits
+         32,768   0%  138.53kB/s    0:05:17       44,049,600 100%   88.44MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-H_I-9229-bin004.fits
+         32,768   0%   67.23kB/s    0:10:54       44,049,600 100%   57.86MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-H_I-9229-bin008.fits
+         32,768   0%   44.02kB/s    0:16:40       44,049,600 100%   43.04MB/s    0:00:00 (xfr#4, to-chk=5/9)
+linesum-H_I-9229-bin016.fits
+         32,768   0%   32.75kB/s    0:22:23        2,981,888   6%    2.84MB/s    0:00:14       44,049,600 100%   34.32MB/s    0:00:01 (xfr#5, to-chk=4/9)
+linesum-H_I-9229-bin032.fits
+         32,768   0%  140.97kB/s    0:05:12       44,049,600 100%   87.16MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-H_I-9229-bin064.fits
+         32,768   0%   66.25kB/s    0:11:04       44,049,600 100%   57.47MB/s    0:00:00 (xfr#7, to-chk=2/9)
+linesum-H_I-9229-bin128.fits
+         32,768   0%   43.72kB/s    0:16:46       44,049,600 100%   42.74MB/s    0:00:00 (xfr#8, to-chk=1/9)
+linesum-H_I-9229-bin256.fits
+         32,768   0%   32.52kB/s    0:22:33        1,867,776   4%    1.78MB/s    0:00:23       44,049,600 100%   34.07MB/s    0:00:01 (xfr#9, to-chk=0/9)
+
+sent 396,543,749 bytes  received 187 bytes  158,617,574.40 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 390 bytes  received 12 bytes  804.00 bytes/sec
+total size is 834,606,720  speedup is 2,076,136.12
 O_III-4959
-/Users/will/Dropbox/OrionMuse/LineMaps/linesum-O_III-4959.fits -> data/linesum-O_III-4959.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-O_III-4959-patfixx.fits -> data/mean-O_III-4959-patfixx.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/sigma-O_III-4959-patfixx.fits -> data/sigma-O_III-4959-patfixx.fits
+sending incremental file list
+
+sent 70 bytes  received 12 bytes  164.00 bytes/sec
+total size is 10,431,360  speedup is 127,211.71
+sending incremental file list
+linesum-O_III-4959-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  165.27MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-O_III-4959-bin002.fits
+         32,768   0%  125.49kB/s    0:05:50       44,049,600 100%   82.86MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-O_III-4959-bin004.fits
+         32,768   0%   62.99kB/s    0:11:38       44,049,600 100%   55.20MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-O_III-4959-bin008.fits
+         32,768   0%   41.99kB/s    0:17:28       42,303,488  96%   40.34MB/s    0:00:00       44,049,600 100%   41.68MB/s    0:00:01 (xfr#4, to-chk=5/9)
+linesum-O_III-4959-bin016.fits
+         32,768   0%    3.12MB/s    0:00:13       44,049,600 100%  161.57MB/s    0:00:00 (xfr#5, to-chk=4/9)
+linesum-O_III-4959-bin032.fits
+         32,768   0%  122.61kB/s    0:05:59       44,049,600 100%   82.37MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-O_III-4959-bin064.fits
+         32,768   0%   62.62kB/s    0:11:42       44,049,600 100%   55.06MB/s    0:00:00 (xfr#7, to-chk=2/9)
+linesum-O_III-4959-bin128.fits
+         32,768   0%   41.88kB/s    0:17:30       41,549,824  94%   39.62MB/s    0:00:00       44,049,600 100%   41.51MB/s    0:00:01 (xfr#8, to-chk=1/9)
+linesum-O_III-4959-bin256.fits
+         32,768   0%    2.23MB/s    0:00:19       44,049,600 100%  150.03MB/s    0:00:00 (xfr#9, to-chk=0/9)
+
+sent 396,543,747 bytes  received 187 bytes  158,617,573.60 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 398 bytes  received 12 bytes  820.00 bytes/sec
+total size is 834,606,720  speedup is 2,035,626.15
 O_III-5007
-/Users/will/Dropbox/OrionMuse/LineMaps/linesum-O_III-5007.fits -> data/linesum-O_III-5007.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-O_III-5007-patfixx.fits -> data/mean-O_III-5007-patfixx.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/sigma-O_III-5007-patfixx.fits -> data/sigma-O_III-5007-patfixx.fits
+sending incremental file list
+
+sent 70 bytes  received 12 bytes  164.00 bytes/sec
+total size is 10,431,360  speedup is 127,211.71
+sending incremental file list
+linesum-O_III-5007-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  167.91MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-O_III-5007-bin002.fits
+         32,768   0%  127.49kB/s    0:05:45       44,049,600 100%   83.68MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-O_III-5007-bin004.fits
+         32,768   0%   63.62kB/s    0:11:31       44,049,600 100%   55.71MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-O_III-5007-bin008.fits
+         32,768   0%   42.38kB/s    0:17:18       44,049,600 100%   42.09MB/s    0:00:00 (xfr#4, to-chk=5/9)
+linesum-O_III-5007-bin016.fits
+         32,768   0%   32.03kB/s    0:22:54           98,304   0%   95.81kB/s    0:07:38       44,049,600 100%   33.99MB/s    0:00:01 (xfr#5, to-chk=4/9)
+linesum-O_III-5007-bin032.fits
+         32,768   0%  136.17kB/s    0:05:23       44,049,600 100%   89.00MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-O_III-5007-bin064.fits
+         32,768   0%   67.65kB/s    0:10:50       44,049,600 100%   59.42MB/s    0:00:00 (xfr#7, to-chk=2/9)
+linesum-O_III-5007-bin128.fits
+         32,768   0%   45.20kB/s    0:16:13       44,049,600 100%   44.22MB/s    0:00:00 (xfr#8, to-chk=1/9)
+linesum-O_III-5007-bin256.fits
+         32,768   0%   33.65kB/s    0:21:48        8,126,464  18%    7.75MB/s    0:00:04       44,049,600 100%   34.52MB/s    0:00:01 (xfr#9, to-chk=0/9)
+
+sent 396,543,751 bytes  received 187 bytes  158,617,575.20 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 394 bytes  received 12 bytes  812.00 bytes/sec
+total size is 834,606,720  speedup is 2,055,681.58
 S_III-9069
-/Users/will/Dropbox/OrionMuse/LineMaps/linesum-S_III-9069.fits -> data/linesum-S_III-9069.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-S_III-9069-patfixx.fits -> data/mean-S_III-9069-patfixx.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/sigma-S_III-9069-patfixx.fits -> data/sigma-S_III-9069-patfixx.fits
+sending incremental file list
+
+sent 70 bytes  received 12 bytes  164.00 bytes/sec
+total size is 10,431,360  speedup is 127,211.71
+sending incremental file list
+linesum-S_III-9069-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  148.33MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-S_III-9069-bin002.fits
+         32,768   0%  112.68kB/s    0:06:30       44,049,600 100%   73.31MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-S_III-9069-bin004.fits
+         32,768   0%   55.75kB/s    0:13:09       44,049,600 100%   48.73MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-S_III-9069-bin008.fits
+         32,768   0%   37.08kB/s    0:19:47       20,807,680  47%   19.84MB/s    0:00:01       44,049,600 100%   36.56MB/s    0:00:01 (xfr#4, to-chk=5/9)
+linesum-S_III-9069-bin016.fits
+         32,768   0%  211.92kB/s    0:03:27       44,049,600 100%   94.83MB/s    0:00:00 (xfr#5, to-chk=4/9)
+linesum-S_III-9069-bin032.fits
+         32,768   0%   72.07kB/s    0:10:10       44,049,600 100%   56.31MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-S_III-9069-bin064.fits
+         32,768   0%   42.84kB/s    0:17:07       37,584,896  85%   35.84MB/s    0:00:00       44,049,600 100%   40.39MB/s    0:00:01 (xfr#7, to-chk=2/9)
+linesum-S_III-9069-bin128.fits
+         32,768   0%  761.90kB/s    0:00:57       44,049,600 100%  123.19MB/s    0:00:00 (xfr#8, to-chk=1/9)
+linesum-S_III-9069-bin256.fits
+         32,768   0%   93.57kB/s    0:07:50       44,049,600 100%   64.73MB/s    0:00:00 (xfr#9, to-chk=0/9)
+
+sent 396,543,747 bytes  received 187 bytes  113,298,266.86 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 394 bytes  received 12 bytes  812.00 bytes/sec
+total size is 834,606,720  speedup is 2,055,681.58
 N_II-6548
-/Users/will/Dropbox/OrionMuse/LineMaps/linesum-N_II-6548.fits -> data/linesum-N_II-6548.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-N_II-6548-patfixx.fits -> data/mean-N_II-6548-patfixx.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/sigma-N_II-6548-patfixx.fits -> data/sigma-N_II-6548-patfixx.fits
+sending incremental file list
+
+sent 69 bytes  received 12 bytes  162.00 bytes/sec
+total size is 10,431,360  speedup is 128,782.22
+sending incremental file list
+linesum-N_II-6548-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  139.46MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-N_II-6548-bin002.fits
+         32,768   0%  105.96kB/s    0:06:55       44,049,600 100%   69.44MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-N_II-6548-bin004.fits
+         32,768   0%   52.81kB/s    0:13:53       44,049,600 100%   45.96MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-N_II-6548-bin008.fits
+         32,768   0%   34.97kB/s    0:20:58       12,124,160  27%   11.56MB/s    0:00:02       44,049,600 100%   34.60MB/s    0:00:01 (xfr#4, to-chk=5/9)
+linesum-N_II-6548-bin016.fits
+         32,768   0%  148.15kB/s    0:04:57       44,049,600 100%   81.26MB/s    0:00:00 (xfr#5, to-chk=4/9)
+linesum-N_II-6548-bin032.fits
+         32,768   0%   61.78kB/s    0:11:52       44,049,600 100%   51.11MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-N_II-6548-bin064.fits
+         32,768   0%   38.88kB/s    0:18:52       25,395,200  57%   24.22MB/s    0:00:00       44,049,600 100%   37.41MB/s    0:00:01 (xfr#7, to-chk=2/9)
+linesum-N_II-6548-bin128.fits
+         32,768   0%  256.00kB/s    0:02:51       44,049,600 100%  101.96MB/s    0:00:00 (xfr#8, to-chk=1/9)
+linesum-N_II-6548-bin256.fits
+         32,768   0%   77.48kB/s    0:09:28       44,049,600 100%   60.53MB/s    0:00:00 (xfr#9, to-chk=0/9)
+
+sent 396,543,746 bytes  received 187 bytes  113,298,266.57 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 396 bytes  received 12 bytes  816.00 bytes/sec
+total size is 834,606,720  speedup is 2,045,604.71
 N_II-6583
-/Users/will/Dropbox/OrionMuse/LineMaps/linesum-N_II-6583.fits -> data/linesum-N_II-6583.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/mean-N_II-6583-patfixx.fits -> data/mean-N_II-6583-patfixx.fits
-/Users/will/Dropbox/OrionMuse/LineMaps/sigma-N_II-6583-patfixx.fits -> data/sigma-N_II-6583-patfixx.fits
+sending incremental file list
+
+sent 69 bytes  received 12 bytes  162.00 bytes/sec
+total size is 10,431,360  speedup is 128,782.22
+sending incremental file list
+linesum-N_II-6583-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  151.00MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-N_II-6583-bin002.fits
+         32,768   0%  114.70kB/s    0:06:23       44,049,600 100%   75.69MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-N_II-6583-bin004.fits
+         32,768   0%   57.55kB/s    0:12:44       44,049,600 100%   51.54MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-N_II-6583-bin008.fits
+         32,768   0%   39.22kB/s    0:18:42       30,081,024  68%   28.69MB/s    0:00:00       44,049,600 100%   38.75MB/s    0:00:01 (xfr#4, to-chk=5/9)
+linesum-N_II-6583-bin016.fits
+         32,768   0%  372.09kB/s    0:01:58       44,049,600 100%  119.34MB/s    0:00:00 (xfr#5, to-chk=4/9)
+linesum-N_II-6583-bin032.fits
+         32,768   0%   90.65kB/s    0:08:05       44,049,600 100%   67.54MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-N_II-6583-bin064.fits
+         32,768   0%   51.36kB/s    0:14:16       44,049,600 100%   48.45MB/s    0:00:00 (xfr#7, to-chk=2/9)
+linesum-N_II-6583-bin128.fits
+         32,768   0%   36.87kB/s    0:19:53       15,826,944  35%   15.09MB/s    0:00:01       44,049,600 100%   36.18MB/s    0:00:01 (xfr#8, to-chk=1/9)
+linesum-N_II-6583-bin256.fits
+         32,768   0%  196.32kB/s    0:03:44       44,049,600 100%   92.94MB/s    0:00:00 (xfr#9, to-chk=0/9)
+
+sent 396,543,746 bytes  received 187 bytes  158,617,573.20 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 388 bytes  received 12 bytes  800.00 bytes/sec
+total size is 834,606,720  speedup is 2,086,516.80
 :END:
 
 
@@ -151,12 +449,15 @@ I don't think this has been applied yet
 * TODO Spatial binning of maps
 + Hopefully tighten up all the correlations
 
+
+* TODO Image plots
++ Show the 
 * Making correlations
 
 ** Mean vs mean
 #+name: mean-mean-plot
 #+header: :var XLINE="He_I-6678" YLINE="H_I-6563"
-#+header: :var VMIN=20 VMAX=40 GAMMA=1.0 NBIN=100 BMIN=1.0
+#+header: :var VMIN=20 VMAX=40 GAMMA=1.0 NBIN=50 BMIN=0.5
 #+BEGIN_SRC python :results file :return plotfile
   import numpy as np
   from astropy.io import fits
@@ -166,44 +467,56 @@ I don't think this has been applied yet
   import seaborn as sns
 
   plotfile = 'hist-mean-{}-mean-{}.png'.format(XLINE, YLINE)
+  sns.set(style='white', font_scale=1.0, color_codes=True)
+  fig, axes = plt.subplots(2, 2, figsize=(5, 5), sharex=True, sharey=True)
 
-  xv = fits.open('data/mean-{}-patfixx.fits'.format(XLINE))[0].data
-  yv = fits.open('data/mean-{}-patfixx.fits'.format(YLINE))[0].data
+  nbins = [1, 4, 16, 64]
 
-  xb = fits.open('data/linesum-{}.fits'.format(XLINE))[0].data
-  yb = fits.open('data/linesum-{}.fits'.format(YLINE))[0].data
+  for ax, nbin in zip(axes.flat, nbins):
 
-  w = xb + yb
-  m = (np.isfinite(xv + yv + w) &
-       (xb > BMIN*np.nanmedian(xb)) &
-       (yb > BMIN*np.nanmedian(yb)))
+      binsuffix = 'bin{:03d}'.format(nbin)
+      xvfn = 'data/mean-{}-patfixx-{}.fits'.format(XLINE, binsuffix)
+      yvfn = 'data/mean-{}-patfixx-{}.fits'.format(YLINE, binsuffix)
+      xbfn = 'data/linesum-{}-{}.fits'.format(XLINE, binsuffix)
+      ybfn = 'data/linesum-{}-{}.fits'.format(YLINE, binsuffix)
+      hdu_name = 'SCALED'
 
-  msg = '{} valid pixels'.format(m.sum())
-  xmin, xmax = ymin, ymax = VMIN, VMAX
+      xv = fits.open(xvfn)[hdu_name].data
+      yv = fits.open(yvfn)[hdu_name].data
+      xb = fits.open(xbfn)[hdu_name].data
+      yb = fits.open(ybfn)[hdu_name].data
 
-  H, xedges, yedges = np.histogram2d(xv[m], yv[m], 
-                                     bins=[NBIN, NBIN],
-                                     range=[[xmin, xmax], [ymin, ymax]],
-                                     weights=w[m]
-                                    )
+      w = xb + yb
+      m = (np.isfinite(xv + yv + w) &
+           (xb > BMIN*np.nanmedian(xb)) &
+           (yb > BMIN*np.nanmedian(yb)))
+
+      msg = 'Binning {0} x {0}\n{1} map pixels'.format(nbin, m.sum()//(nbin*nbin))
+      xmin, xmax = ymin, ymax = VMIN, VMAX
+
+      H, xedges, yedges = np.histogram2d(xv[m], yv[m], 
+					 bins=[NBIN, NBIN],
+					 range=[[xmin, xmax], [ymin, ymax]],
+					 weights=w[m]
+					)
 
 
-  sns.set(style='white', font_scale=1.5, color_codes=True)
-  fig, ax = plt.subplots(figsize=(5, 5))
-  # sns.distplot(xsig[m]**2, kde=False, hist_kws={'range': [0, 1.5*SIGMAX**2]})
-  ax.imshow((H.T)**(1.0/GAMMA), 
-            extent=[xmin, xmax, ymin, ymax], 
-            interpolation='none', aspect='auto', 
-            origin='lower', cmap=plt.cm.gray_r)
-  ax.plot([xmin, xmax], [ymin, ymax], 'r', alpha=0.3, lw=2)
-  ax.text(0.5, 0.98, msg, ha='center', va='top',
-          fontsize='x-small',
-          transform=ax.transAxes)
-  ax.xaxis.set_major_formatter(FormatStrFormatter('%d'))
-  ax.xaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
-  ax.yaxis.set_major_formatter(FormatStrFormatter('%d'))
-  ax.yaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
-  ax.set(
+      # sns.distplot(xsig[m]**2, kde=False, hist_kws={'range': [0, 1.5*SIGMAX**2]})
+      ax.imshow((H.T)**(1.0/GAMMA), 
+		extent=[xmin, xmax, ymin, ymax], 
+		interpolation='none', aspect='auto', 
+		origin='lower', cmap=plt.cm.gray_r)
+      ax.plot([xmin, xmax], [ymin, ymax], 'r', alpha=0.3, lw=2)
+      ax.text(0.5, 0.98, msg, ha='center', va='top',
+              fontsize='xx-small',
+              transform=ax.transAxes)
+      ax.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+      ax.xaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
+      ax.yaxis.set_major_formatter(FormatStrFormatter('%d'))
+      ax.yaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
+
+
+  axes[1, 0].set(
       xlabel='Mean velocity ' + XLINE,
       ylabel='Mean velocity ' + YLINE,
       xlim=[xmin, xmax],
@@ -240,19 +553,19 @@ I am having to shift 5 km/s to the blue for these lines, which suggests an issue
 #+RESULTS:
 [[file:hist-mean-O_III-5007-mean-O_III-4959.png]]
 
-Strangely, there is a slight difference between these two.  Is it a calibration error, or is one of them blended with something?
+Strangely, there is a slight difference between these two.  Is it a calibration error, or is one of them blended with something?  Actually, it is only 0.4 km/s difference. 
 
-#+call: mean-mean-plot(XLINE="N_II-6548", YLINE="H_I-6563", VMIN=25, VMAX=45)
+#+call: mean-mean-plot(XLINE="N_II-6548", YLINE="H_I-6563", VMIN=25, VMAX=45, BMIN=0.0)
 
 #+RESULTS:
 [[file:hist-mean-N_II-6548-mean-H_I-6563.png]]
 
-#+call: mean-mean-plot(XLINE="N_II-6583", YLINE="H_I-6563", VMIN=25, VMAX=45)
+#+call: mean-mean-plot(XLINE="N_II-6583", YLINE="H_I-6563", VMIN=25, VMAX=45, BMIN=0.0)
 
 #+RESULTS:
 [[file:hist-mean-N_II-6583-mean-H_I-6563.png]]
 
-#+call: mean-mean-plot(XLINE="N_II-6583", YLINE="N_II-6548", VMIN=25, VMAX=45)
+#+call: mean-mean-plot(XLINE="N_II-6583", YLINE="N_II-6548", VMIN=25, VMAX=45, BMIN=0.0)
 
 #+RESULTS:
 [[file:hist-mean-N_II-6583-mean-N_II-6548.png]]
@@ -287,7 +600,7 @@ This shows [S III] as being slightly redder than H I.
 ** Variance vs variance
 #+name: var-var-plot
 #+header: :var XLINE="He_I-6678" YLINE="H_I-6563"
-#+header: :var SIGMIN=35 SIGMAX=60 GAMMA=1.0 NBIN=100 BMIN=1.0
+#+header: :var SIGMIN=46 SIGMAX=50 GAMMA=1.0 NBIN=50 BMIN=0.1
 #+BEGIN_SRC python :results file :return plotfile
   import numpy as np
   from astropy.io import fits
@@ -297,44 +610,53 @@ This shows [S III] as being slightly redder than H I.
   import seaborn as sns
 
   plotfile = 'hist-var-{}-var-{}.png'.format(XLINE, YLINE)
+  sns.set(style='white', font_scale=1.0, color_codes=True)
+  fig, axes = plt.subplots(2, 2, figsize=(5, 5), sharex=True, sharey=True)
 
-  xsig = fits.open('data/sigma-{}-patfixx.fits'.format(XLINE))[0].data
-  ysig = fits.open('data/sigma-{}-patfixx.fits'.format(YLINE))[0].data
+  nbins = [1, 4, 16, 64]
 
-  xb = fits.open('data/linesum-{}.fits'.format(XLINE))[0].data
-  yb = fits.open('data/linesum-{}.fits'.format(YLINE))[0].data
+  for ax, nbin in zip(axes.flat, nbins):
+      binsuffix = 'bin{:03d}'.format(nbin)
+      xsfn = 'data/sigma-{}-patfixx-{}.fits'.format(XLINE, binsuffix)
+      ysfn = 'data/sigma-{}-patfixx-{}.fits'.format(YLINE, binsuffix)
+      xbfn = 'data/linesum-{}-{}.fits'.format(XLINE, binsuffix)
+      ybfn = 'data/linesum-{}-{}.fits'.format(YLINE, binsuffix)
+      hdu_name = 'SCALED'
 
-  w = xb + yb
-  m = (np.isfinite(xsig + ysig + w) &
-       (xb > BMIN*np.nanmedian(xb)) &
-       (yb > BMIN*np.nanmedian(yb)))
+      xsig = fits.open(xsfn)[hdu_name].data
+      ysig = fits.open(ysfn)[hdu_name].data
+      xb = fits.open(xbfn)[hdu_name].data
+      yb = fits.open(ybfn)[hdu_name].data
 
-  msg = '{} valid pixels'.format(m.sum())
-  xmin, xmax = ymin, ymax = SIGMIN**2, SIGMAX**2
+      w = xb + yb
+      m = (np.isfinite(xsig + ysig + w) &
+           (xb > BMIN*np.nanmedian(xb)) &
+           (yb > BMIN*np.nanmedian(yb)))
 
-  H, xedges, yedges = np.histogram2d(xsig[m]**2, ysig[m]**2, 
-                                     bins=[NBIN, NBIN],
-                                     range=[[xmin, xmax], [ymin, ymax]],
-                                     weights=w[m]
-                                    )
+      msg = 'Binning {0} x {0}\n{1} map pixels'.format(nbin, m.sum()//(nbin*nbin))
+      xmin, xmax = ymin, ymax = SIGMIN**2, SIGMAX**2
+
+      H, xedges, yedges = np.histogram2d(xsig[m]**2, ysig[m]**2, 
+					 bins=[NBIN, NBIN],
+					 range=[[xmin, xmax], [ymin, ymax]],
+					 weights=w[m]
+					)
 
 
-  sns.set(style='white', font_scale=1.5, color_codes=True)
-  fig, ax = plt.subplots(figsize=(5, 5))
-  # sns.distplot(xsig[m]**2, kde=False, hist_kws={'range': [0, 1.5*SIGMAX**2]})
-  ax.imshow((H.T)**(1.0/GAMMA), 
-            extent=[xmin, xmax, ymin, ymax], 
-            interpolation='none', aspect='auto', 
-            origin='lower', cmap=plt.cm.gray_r)
-  ax.plot([xmin, xmax], [ymin, ymax], 'r', alpha=0.3, lw=2)
-  ax.text(0.5, 0.98, msg, ha='center', va='top',
-          fontsize='x-small',
-          transform=ax.transAxes)
-  ax.xaxis.set_major_formatter(FormatStrFormatter('%d'))
-  ax.xaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
-  ax.yaxis.set_major_formatter(FormatStrFormatter('%d'))
-  ax.yaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
-  ax.set(
+      ax.imshow((H.T)**(1.0/GAMMA), 
+		extent=[xmin, xmax, ymin, ymax], 
+		interpolation='none', aspect='auto', 
+		origin='lower', cmap=plt.cm.gray_r)
+      ax.plot([xmin, xmax], [ymin, ymax], 'r', alpha=0.3, lw=2)
+      ax.text(0.5, 0.98, msg, ha='center', va='top',
+              fontsize='xx-small',
+              transform=ax.transAxes)
+      ax.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+      ax.xaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
+      ax.yaxis.set_major_formatter(FormatStrFormatter('%d'))
+      ax.yaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
+
+  axes[1, 0].set(
       xlabel='Variance ' + XLINE,
       ylabel='Variance ' + YLINE,
       xlim=[xmin, xmax],
@@ -347,7 +669,7 @@ This shows [S III] as being slightly redder than H I.
 #+RESULTS: var-var-plot
 [[file:hist-var-He_I-6678-var-H_I-6563.png]]
 
-#+call: var-var-plot(XLINE="He_I-5876", YLINE="H_I-4861", SIGMIN=45, SIGMAX=80)
+#+call: var-var-plot(XLINE="He_I-5876", YLINE="H_I-4861", SIGMIN=52, SIGMAX=75)
 
 #+RESULTS:
 [[file:hist-var-He_I-5876-var-H_I-4861.png]]
@@ -357,12 +679,12 @@ This shows [S III] as being slightly redder than H I.
 #+RESULTS:
 [[file:hist-var-O_III-5007-var-H_I-4861.png]]
 
-#+call: var-var-plot(XLINE="O_III-4959", YLINE="H_I-4861", SIGMIN=63, SIGMAX=75)
+#+call: var-var-plot(XLINE="O_III-4959", YLINE="H_I-4861", SIGMIN=64, SIGMAX=75)
 
 #+RESULTS:
 [[file:hist-var-O_III-4959-var-H_I-4861.png]]
 
-#+call: var-var-plot(XLINE="O_III-5007", YLINE="O_III-4959", SIGMIN=63, SIGMAX=75)
+#+call: var-var-plot(XLINE="O_III-5007", YLINE="O_III-4959", SIGMIN=67, SIGMAX=71)
 
 #+RESULTS:
 [[file:hist-var-O_III-5007-var-O_III-4959.png]]
@@ -370,34 +692,34 @@ This shows [S III] as being slightly redder than H I.
 This shows a small offset, presumably due to increase in the instrumental width going from 5007 to 4959
 
 
-#+call: var-var-plot(XLINE="N_II-6583", YLINE="H_I-6563", SIGMIN=40, SIGMAX=55)
+#+call: var-var-plot(XLINE="N_II-6583", YLINE="H_I-6563", SIGMIN=46, SIGMAX=50)
 
 #+RESULTS:
 [[file:hist-var-N_II-6583-var-H_I-6563.png]]
 
-#+call: var-var-plot(XLINE="N_II-6548", YLINE="H_I-6563", SIGMIN=40, SIGMAX=55)
+#+call: var-var-plot(XLINE="N_II-6548", YLINE="H_I-6563", SIGMIN=46, SIGMAX=50)
 
 #+RESULTS:
 [[file:hist-var-N_II-6548-var-H_I-6563.png]]
 
-#+call: var-var-plot(XLINE="N_II-6548", YLINE="N_II-6583", SIGMIN=40, SIGMAX=55)
+#+call: var-var-plot(XLINE="N_II-6548", YLINE="N_II-6583", SIGMIN=45, SIGMAX=49)
 
 #+RESULTS:
 [[file:hist-var-N_II-6548-var-N_II-6583.png]]
 
 This is disappointingly circular, implying that the sigma variations for the weaker 6548 line are overwhelmingly due to noise.  *Maybe binning might help*
 
-#+call: var-var-plot(XLINE="H_I-9015", YLINE="H_I-9229", SIGMIN=27, SIGMAX=47)
+#+call: var-var-plot(XLINE="H_I-9015", YLINE="H_I-9229", SIGMIN=35, SIGMAX=41)
 
 #+RESULTS:
 [[file:hist-var-H_I-9015-var-H_I-9229.png]]
 
-#+call: var-var-plot(XLINE="S_III-9069", YLINE="H_I-9229", SIGMIN=27, SIGMAX=47)
+#+call: var-var-plot(XLINE="S_III-9069", YLINE="H_I-9229", SIGMIN=35, SIGMAX=41, BMIN=0.5)
 
 #+RESULTS:
 [[file:hist-var-S_III-9069-var-H_I-9229.png]]
 
-#+call: var-var-plot(XLINE="S_III-9069", YLINE="H_I-9015", SIGMIN=27, SIGMAX=47)
+#+call: var-var-plot(XLINE="S_III-9069", YLINE="H_I-9015", SIGMIN=35, SIGMAX=41, BMIN=0.5)
 
 #+RESULTS:
 [[file:hist-var-S_III-9069-var-H_I-9015.png]]
