@@ -8,8 +8,39 @@ It looks like the sigmas that I measured from MUSE are good enough to find kinem
 
 ** Status and next steps 
 
-*** [2016-12-18 Sun] After first day
-
+*** [2016-12-20 Tue] After third day
+**** Achievements after third day
+1. Removed fixed pattern noise
+   - [[file:~/Dropbox/depattern-maps/][file:~/Dropbox/depattern-maps/]]depattern.org
+2. Performed multibinning of mean and sigma
+   - [[file:~/Dropbox/multibin-maps/multibin.org][file:~/Dropbox/multibin-maps/multibin.org]]
+3. Plotted depatterned, multibinned results
+   - [[id:D0BF70CD-55F8-4BA0-A2B1-8C5BE79642FA][Making correlations]]
+**** Issues after third day
+1. Pattern noise removal still has some problems
+   - Would be better if we masked out stars before doing it
+   - Also, for low s/n data it tends to just make a mess of everything
+2. Issue 1 from [[id:48FD212E-DCA9-4E16-A187-0A8B6467B402][Issues after first day]] is still relevant 
+**** What do do now (after third day)?
+1. Instead of var-var, we could try dvar vs var, which would eliminate the slope to first order
+   - This is the only task rolled over from [[id:507E217E-A9A2-4118-ABE2-DED220A2F3EF][What to do now (after first day)?]]
+   - Also we can remove the instrumental width if we can get a good estimate on that
+2. Further work on the \Delta{}v vs \Delta{}v graphs
+   - Include the multibinning
+   - And have a look at \Delta{}v versus line ratio
+3. Try and deduce instrumental width as function of wavelength to see if there is any systematic pattern to it
+   - As far as I can see, it monotonically increases towards the blue
+   - Put lines in groups according to expected intrinsic widths
+     1) Low-ionization metal lines
+     2) high-ionization metal lines
+     3) helium lines
+     4) hydrogen lines
+   - Group (1) should have smallest non-istrumental widths, so would in prniciple be best, but there are not many of them
+     - May need to use more lines than we are doing so far
+4. Try and improve the de-patterning
+5. Write up the theory of different contributions to variance and derivation of kinetic temperature
+6. Calculate maps of \Delta\sigma^{2} to see what they look like
+*** TODO [2016-12-18 Sun] After first day
 **** Achievements after first day
 1. We have all the data we need (not in github repo because of size)
 2. Made variance-variance plots
@@ -48,12 +79,15 @@ It looks like the sigmas that I measured from MUSE are good enough to find kinem
      - so less than 10% in the IR and red
      - but 20% in the blue
 **** What to do now (after first day)?
+:PROPERTIES:
+:ID:       507E217E-A9A2-4118-ABE2-DED220A2F3EF
+:END:
 1. [X] Try and sort out the fixed pattern noise
    - This is in separate project: [[file:~/Dropbox/depattern-maps/][file:~/Dropbox/depattern-maps/]]
    - And it seems to work
-2. Spatial binning of maps
+2. [X] Spatial binning of maps
    - Just port over the stuff from [[file:~/Dropbox/OrionMuse/]]
-3. Modify plotting programs to do multiple binning levels
+3. [X] Modify plotting programs to do multiple binning levels
 4. Instead of var-var, we could try dvar vs var, which would eliminate the slope to first order
 * Marshalling the image files
 + We need the mean, sigma, and linesum for all the lines of interest
@@ -453,6 +487,9 @@ I don't think this has been applied yet
 * TODO Image plots
 + Show the 
 * Making correlations
+:PROPERTIES:
+:ID:       D0BF70CD-55F8-4BA0-A2B1-8C5BE79642FA
+:END:
 
 ** Mean vs mean
 #+name: mean-mean-plot
