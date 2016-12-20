@@ -90,6 +90,8 @@ It looks like the sigmas that I measured from MUSE are good enough to find kinem
 3. [X] Modify plotting programs to do multiple binning levels
 4. Instead of var-var, we could try dvar vs var, which would eliminate the slope to first order
 * Marshalling the image files
+** MUSE maps from the external disk
++ We want copies of these so we can disconnect the disk and still work
 + We need the mean, sigma, and linesum for all the lines of interest
 + Note that the whole =data/= folder is omitted from the git repo, because it is too large (0.5 GB at the start)
 #+name: line-ids
@@ -460,15 +462,49 @@ sending incremental file list
 sent 388 bytes  received 12 bytes  800.00 bytes/sec
 total size is 834,606,720  speedup is 2,086,516.80
 :END:
+** Mow much data do we have?
++ Space used up in data folder
+#+BEGIN_SRC bash :results verbatim append
+date
+du -sh data
+#+END_SRC
 
+#+RESULTS:
+: Tue Dec 20 11:07:47 GMT 2016
+:  13G	data
+
++ Space remaining on disk
+#+BEGIN_SRC bash :results verbatim append
+date
+df -h 
+#+END_SRC
+
+#+RESULTS:
+: Tue Dec 20 17:25:45 GMT 2016
+: Filesystem      Size   Used  Avail Capacity iused      ifree %iused  Mounted on
+: /dev/disk1     931Gi  737Gi  194Gi    80% 4332485 4290634794    0%   /
+: devfs          186Ki  186Ki    0Bi   100%     642          0  100%   /dev
+: map -hosts       0Bi    0Bi    0Bi   100%       0          0  100%   /net
+: map auto_home    0Bi    0Bi    0Bi   100%       0          0  100%   /home
+: /dev/disk2s2   931Gi  743Gi  188Gi    80%  202673 4294764606    0%   /Volumes/SSD-1TB
 
 
 * TODO Question of blends
 + Which lines may be affected by blends
++ [N II] 6583.45 is close to C II 6578.05
+  + Separated by 5 \AA
 
+* TODO Heliocentric correction and absolute mean velocity values
++ [2016-12-20 Tue] So it turns out the main problem with the heliocentric velocities is that the MUSE datacube is already in the barycentric frame (which is only 0.01 km/s different from the heliocentric frame)
+  + Whereas I was applying the heliocentric correction as if the wavelengths were in the topocentric frame!  /Silly me!/
++ Turns out that I already printed out the value of the heliocentric correction at the end of the OrionMuse heading [[id:9B385AF1-5AA5-4EA2-B1A3-8802C0959808][Program to extract a single line extract-em-line.py]]
+  + The value was *-16.217273731*
+  + So we need to add that back to all our velocities!
+** Corrections to the absolute velocities
++ Fig 4 of Weilbacher shows all their mean velocities
++ They are mixing high-ionization and low-ionization lines, so some of the spread is due to that
++ But you can see the fall off to negative values for \lambda < 5100 \AA
 
-* TODO Heliocentric correction
-I don't think this has been applied yet
 
 * TODO How to deal with the pattern noise
 + This should be removed before the binning
@@ -478,14 +514,26 @@ I don't think this has been applied yet
   + Described in [[id:7E273615-5455-41BA-8606-458A9A2E35DF][Dealing with the pattern noise in the velocity maps]]
   + This worked with chunks of 290x290 pixels and found the average x profile and y profile pattern, averaged over all the chunks
     + I am cleaning that up now, since it looks like it works pretty well
-+ [ ] It may be a good idea to combine this real-space approach by some sort of retouching in Fourier space
++ [X] It may be a good idea to combine this real-space approach by some sort of retouching in Fourier space
+  + No, not necessary
++ Now have working version, which is housed in its own repo
+  + [[file:~/Dropbox/depattern-maps/][file:~/Dropbox/depattern-maps/]]
++ [ ] Need to fix a few issues with the "extreme" method, which is what works best for the sigma maps
+  1. Use a per-line mask based on an EW threshold
+  2. Maybe don't apply when the maps are too noisy
 
-* TODO Spatial binning of maps
+* DONE Spatial binning of maps
+CLOSED: [2016-12-20 Tue 16:34]
 + Hopefully tighten up all the correlations
-
++ Yep, that worked really well
++ It is done in a different repo
+  + [[file:~/Dropbox/multibin-maps/][file:~/Dropbox/multibin-maps/]]
++ And files are copied over with script in [[id:A2E5E90B-A8C7-49FB-8C12-1A6B6BDD6029][Marshalling the image files]]
 
 * TODO Image plots
-+ Show the 
++ Show the effects of the pattern removal and binning
++ Show the high-velocity jets
+
 * Making correlations
 :PROPERTIES:
 :ID:       D0BF70CD-55F8-4BA0-A2B1-8C5BE79642FA
@@ -494,7 +542,7 @@ I don't think this has been applied yet
 ** Mean vs mean
 #+name: mean-mean-plot
 #+header: :var XLINE="He_I-6678" YLINE="H_I-6563"
-#+header: :var VMIN=20 VMAX=40 GAMMA=1.0 NBIN=50 BMIN=0.5
+#+header: :var VMIN=5 VMAX=25 GAMMA=1.0 NBIN=50 BMIN=0.5
 #+BEGIN_SRC python :results file :return plotfile
   import numpy as np
   from astropy.io import fits
@@ -502,6 +550,8 @@ I don't think this has been applied yet
   from matplotlib.ticker import (MultipleLocator, LogLocator, 
 				 MaxNLocator, FormatStrFormatter)
   import seaborn as sns
+
+  VHEL = -16.217273731
 
   plotfile = 'hist-mean-{}-mean-{}.png'.format(XLINE, YLINE)
   sns.set(style='white', font_scale=1.0, color_codes=True)
@@ -518,8 +568,8 @@ I don't think this has been applied yet
       ybfn = 'data/linesum-{}-{}.fits'.format(YLINE, binsuffix)
       hdu_name = 'SCALED'
 
-      xv = fits.open(xvfn)[hdu_name].data
-      yv = fits.open(yvfn)[hdu_name].data
+      xv = fits.open(xvfn)[hdu_name].data + VHEL
+      yv = fits.open(yvfn)[hdu_name].data + VHEL
       xb = fits.open(xbfn)[hdu_name].data
       yb = fits.open(ybfn)[hdu_name].data
 
@@ -573,62 +623,71 @@ I don't think this has been applied yet
 
 This must be affected by the fine structure, which perhaps is not taken into account in the He I 5876 rest wavelength. On the other hand, it is the Hb line that shows the greatest deviation from expectations (see next pair)
 
-#+call: mean-mean-plot(XLINE="O_III-5007", YLINE="H_I-4861", VMIN=15, VMAX=35)
+#+call: mean-mean-plot(XLINE="O_III-5007", YLINE="H_I-4861", VMIN=0, VMAX=20)
 
 #+RESULTS:
 [[file:hist-mean-O_III-5007-mean-H_I-4861.png]]
 
-I am having to shift 5 km/s to the blue for these lines, which suggests an issue with the wavelength calibration between the blue and the red
+I am having to shift 5 km/s to the blue for these lines, which suggests an issue with the wavelength calibration between the blue and the red.  Turns out that Weilbacher et al already noticed this
 
-#+call: mean-mean-plot(XLINE="O_III-4959", YLINE="H_I-4861", VMIN=15, VMAX=35)
+#+call: mean-mean-plot(XLINE="O_III-4959", YLINE="H_I-4861", VMIN=0, VMAX=20)
 
 #+RESULTS:
 [[file:hist-mean-O_III-4959-mean-H_I-4861.png]]
 
-#+call: mean-mean-plot(XLINE="O_III-5007", YLINE="O_III-4959", VMIN=15, VMAX=35)
+#+call: mean-mean-plot(XLINE="O_III-5007", YLINE="O_III-4959", VMIN=0, VMAX=20)
 
 #+RESULTS:
 [[file:hist-mean-O_III-5007-mean-O_III-4959.png]]
 
 Strangely, there is a slight difference between these two.  Is it a calibration error, or is one of them blended with something?  Actually, it is only 0.4 km/s difference. 
 
-#+call: mean-mean-plot(XLINE="N_II-6548", YLINE="H_I-6563", VMIN=25, VMAX=45, BMIN=0.0)
+#+call: mean-mean-plot(XLINE="N_II-6548", YLINE="H_I-6563", VMIN=10, VMAX=30, BMIN=0.0)
 
 #+RESULTS:
 [[file:hist-mean-N_II-6548-mean-H_I-6563.png]]
 
-#+call: mean-mean-plot(XLINE="N_II-6583", YLINE="H_I-6563", VMIN=25, VMAX=45, BMIN=0.0)
+#+call: mean-mean-plot(XLINE="N_II-6583", YLINE="H_I-6563", VMIN=10, VMAX=30, BMIN=0.0)
 
 #+RESULTS:
 [[file:hist-mean-N_II-6583-mean-H_I-6563.png]]
 
-#+call: mean-mean-plot(XLINE="N_II-6583", YLINE="N_II-6548", VMIN=25, VMAX=45, BMIN=0.0)
+#+call: mean-mean-plot(XLINE="N_II-6583", YLINE="N_II-6548", VMIN=10, VMAX=30, BMIN=0.0)
 
 #+RESULTS:
 [[file:hist-mean-N_II-6583-mean-N_II-6548.png]]
 
 This shows a 3 km/s offset between the two [N II] lines, which is unfortunate, but it is smaller than the offset between either line and Ha.  And we can interpolate between the two, I suppose
 
-#+call: mean-mean-plot(XLINE="H_I-9015", YLINE="H_I-9229", VMIN=20, VMAX=40)
+#+call: mean-mean-plot(XLINE="O_III-5007", YLINE="N_II-6583", NBIN=50, VMIN=3, VMAX=28, BMIN=0.0)
+
+#+RESULTS:
+[[file:hist-mean-O_III-5007-mean-N_II-6583.png]]
+
+This one should be an exact replica of Fig 17(b) of GDH08, and it looks pretty much like it, except for:
+1. About a +12 km/s in the [O III] velocity
+2. Maybe a +14 km/s offset in the [N II] velocity
+
+#+call: mean-mean-plot(XLINE="H_I-9015", YLINE="H_I-9229", VMIN=5, VMAX=25)
 
 #+RESULTS:
 [[file:hist-mean-H_I-9015-mean-H_I-9229.png]]
 
 This has about a 1 km/s offset between the two lines
 
-#+call: mean-mean-plot(XLINE="S_III-9069", YLINE="H_I-9229", VMIN=20, VMAX=40)
+#+call: mean-mean-plot(XLINE="S_III-9069", YLINE="H_I-9229", VMIN=5, VMAX=25)
 
 #+RESULTS:
 [[file:hist-mean-S_III-9069-mean-H_I-9229.png]]
 
 This shows [S III] as being slightly redder than H I. 
 
-#+call: mean-mean-plot(XLINE="H_I-6563", YLINE="H_I-9229", VMIN=20, VMAX=40)
+#+call: mean-mean-plot(XLINE="H_I-6563", YLINE="H_I-9229", VMIN=5, VMAX=25)
 
 #+RESULTS:
 [[file:hist-mean-H_I-6563-mean-H_I-9229.png]]
 
-#+call: mean-mean-plot(XLINE="H_I-6563", YLINE="H_I-4861", VMIN=20, VMAX=40)
+#+call: mean-mean-plot(XLINE="H_I-6563", YLINE="H_I-4861", VMIN=0, VMAX=20)
 
 #+RESULTS:
 [[file:hist-mean-H_I-6563-mean-H_I-4861.png]]
@@ -779,7 +838,7 @@ This is disappointingly circular, implying that the sigma variations for the wea
 #+name: dv-dv-plot
 #+header: :var XLINE1="H_I-4861" XLINE2="O_III-5007"
 #+header: :var YLINE1="N_II-6583" YLINE2="H_I-6563"
-#+header: :var VMIN=-4 VMAX=7 GAMMA=1.0 NBIN=100 BMIN=1.0
+#+header: :var VMIN=-5 VMAX=10 GAMMA=1.0 NBIN=50 nbin=16 BMIN=0.1
 #+BEGIN_SRC python :results file :return plotfile
   import numpy as np
   from astropy.io import fits
@@ -791,28 +850,32 @@ This is disappointingly circular, implying that the sigma variations for the wea
   wavs = [s.split('-')[-1] for s in
           [XLINE1, XLINE2, YLINE1, YLINE2]]
   plotfile = 'hist-dv-{}-{}-dv-{}-{}.png'.format(*wavs)
+  hdu_name = 'SCALED'
 
-  xv1 = fits.open('data/mean-{}-patfixx.fits'.format(XLINE1))[0].data
-  xv2 = fits.open('data/mean-{}-patfixx.fits'.format(XLINE2))[0].data
+  binsuffix = 'bin{:03d}'.format(nbin)
+
+  xv1 = fits.open('data/mean-{}-patfixx-{}.fits'.format(XLINE1, binsuffix))[hdu_name].data
+  xv2 = fits.open('data/mean-{}-patfixx-{}.fits'.format(XLINE2, binsuffix))[hdu_name].data
   xv = xv1 - xv2
 
-  yv1 = fits.open('data/mean-{}-patfixx.fits'.format(YLINE1))[0].data
-  yv2 = fits.open('data/mean-{}-patfixx.fits'.format(YLINE2))[0].data
+  yv1 = fits.open('data/mean-{}-patfixx-{}.fits'.format(YLINE1, binsuffix))[hdu_name].data
+  yv2 = fits.open('data/mean-{}-patfixx-{}.fits'.format(YLINE2, binsuffix))[hdu_name].data
   yv = yv1 - yv2
 
-  xb1 = fits.open('data/linesum-{}.fits'.format(XLINE1))[0].data
-  xb2 = fits.open('data/linesum-{}.fits'.format(XLINE2))[0].data
-  yb1 = fits.open('data/linesum-{}.fits'.format(YLINE1))[0].data
-  yb2 = fits.open('data/linesum-{}.fits'.format(YLINE2))[0].data
+  xb1 = fits.open('data/linesum-{}-{}.fits'.format(XLINE1, binsuffix))[hdu_name].data
+  xb2 = fits.open('data/linesum-{}-{}.fits'.format(XLINE2, binsuffix))[hdu_name].data
+  yb1 = fits.open('data/linesum-{}-{}.fits'.format(YLINE1, binsuffix))[hdu_name].data
+  yb2 = fits.open('data/linesum-{}-{}.fits'.format(YLINE2, binsuffix))[hdu_name].data
 
   w = xb1 + xb2 + yb1 + yb2 
   m = (np.isfinite(xv1 + xv2 + yv1 + yv2 + w) &
+       (xv1 != 0.0) & (xv2 != 0.0) & (yv1 != 0.0) & (yv2 != 0.0) & 
        (xb1 > BMIN*np.nanmedian(xb1)) &
        (xb2 > BMIN*np.nanmedian(xb2)) &
        (yb1 > BMIN*np.nanmedian(yb1)) &
        (yb2 > BMIN*np.nanmedian(yb2)))
 
-  msg = '{} valid pixels'.format(m.sum())
+  msg = 'Binning {0} x {0}\n{1} map pixels'.format(nbin, m.sum()//(nbin*nbin))
   xmin, xmax = ymin, ymax = VMIN, VMAX
 
   H, xedges, yedges = np.histogram2d(xv[m], yv[m], 
@@ -851,6 +914,17 @@ This is disappointingly circular, implying that the sigma variations for the wea
 
 #+RESULTS: dv-dv-plot
 [[file:hist-dv-4861-5007-dv-6583-6563.png]]
+
+#+CALL: dv-dv-plot(XLINE1="O_III-4959", XLINE2="O_III-5007", YLINE1="N_II-6548", YLINE2="N_II-6583", nbin=32, NBIN=200)
+
+#+RESULTS:
+[[file:hist-dv-4959-5007-dv-6548-6583.png]]
+
+#+CALL: dv-dv-plot(XLINE1="H_I-6563", XLINE2="He_I-6678", YLINE1="H_I-4861", YLINE2="He_I-5876", nbin=32, NBIN=100, VMIN=-10, VMAX=5)
+
+#+RESULTS:
+[[file:hist-dv-6563-6678-dv-4861-5876.png]]
+
 
 * Comments on individual line sets
 
