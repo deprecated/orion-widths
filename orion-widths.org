@@ -89,19 +89,189 @@ It looks like the sigmas that I measured from MUSE are good enough to find kinem
    - Just port over the stuff from [[file:~/Dropbox/OrionMuse/]]
 3. [X] Modify plotting programs to do multiple binning levels
 4. Instead of var-var, we could try dvar vs var, which would eliminate the slope to first order
-* Marshalling the data files
+* Marshalling the data files and other sundry stuff
 :PROPERTIES:
 :ID:       A2E5E90B-A8C7-49FB-8C12-1A6B6BDD6029
 :END:
-** MUSE spectra from nil server
+** Table of line wavelengths from OrionMuse project
 #+BEGIN_SRC sh :results verbatim
-  date
-  rsync -azP nil:/fs/nil/other0/will/orion-muse/LineMaps/spec1d-*-????.tab spec-data
+date
+cp -av ../OrionMuse/basic-line-list.tab .
 #+END_SRC
 
 #+RESULTS:
-: Tue Dec 20 20:51:08 GMT 2016
-: receiving incremental file list
+: Tue Dec 20 23:12:30 GMT 2016
+: ../OrionMuse/basic-line-list.tab -> ./basic-line-list.tab
+** Random python libraries 
+#+BEGIN_SRC sh :results verbatim
+date
+cp -av ../OrionMuse/misc_utils.py .
+#+END_SRC
+
+#+RESULTS:
+: Tue Dec 20 23:12:41 GMT 2016
+: ../OrionMuse/misc_utils.py -> ./misc_utils.py
+
+** MUSE spectra from nil server
+#+BEGIN_SRC sh :results verbatim
+  date
+  rsync -avzPL --info=progress0 nil:/fs/nil/other0/will/orion-muse/LineMaps/spec1d-*-????.tab spec-data
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Wed Dec 21 00:01:23 GMT 2016
+receiving incremental file list
+spec1d-Ar_III-5192.tab
+spec1d-Ar_III-7136.tab
+spec1d-Ar_III-7751.tab
+spec1d-Ar_IV-4740.tab
+spec1d-C_I-8727.tab
+spec1d-C_II-5890.tab
+spec1d-C_II-6151.tab
+spec1d-C_II-6462.tab
+spec1d-C_II-6578.tab
+spec1d-C_II-7231.tab
+spec1d-C_II-7236.tab
+spec1d-C_II-7531.tab
+spec1d-C_IV-5801.tab
+spec1d-C_IV-5812.tab
+spec1d-Ca_I-7890.tab
+spec1d-Ca_I-9052.tab
+spec1d-Ca_I-9095.tab
+spec1d-Cl_II-8579.tab
+spec1d-Cl_III-5518.tab
+spec1d-Cl_III-5538.tab
+spec1d-Cl_IV-8046.tab
+spec1d-Cr_II-8000.tab
+spec1d-DIB-5781.tab
+spec1d-DIB-6278.tab
+spec1d-Fe_II-4815.tab
+spec1d-Fe_II-4890.tab
+spec1d-Fe_II-4905.tab
+spec1d-Fe_II-5159.tab
+spec1d-Fe_II-5262.tab
+spec1d-Fe_II-5334.tab
+spec1d-Fe_II-5376.tab
+spec1d-Fe_II-6133.tab
+spec1d-Fe_II-7155.tab
+spec1d-Fe_II-7172.tab
+spec1d-Fe_II-7388.tab
+spec1d-Fe_II-7453.tab
+spec1d-Fe_II-8617.tab
+spec1d-Fe_III-4658.tab
+spec1d-Fe_III-4702.tab
+spec1d-Fe_III-4734.tab
+spec1d-Fe_III-4755.tab
+spec1d-Fe_III-4770.tab
+spec1d-Fe_III-4778.tab
+spec1d-Fe_III-4881.tab
+spec1d-Fe_III-4931.tab
+spec1d-Fe_III-5270.tab
+spec1d-Fe_III-5412.tab
+spec1d-H_I-4861.tab
+spec1d-H_I-6563.tab
+spec1d-H_I-8438.tab
+spec1d-H_I-8467.tab
+spec1d-H_I-8502.tab
+spec1d-H_I-8545.tab
+spec1d-H_I-8598.tab
+spec1d-H_I-8665.tab
+spec1d-H_I-8750.tab
+spec1d-H_I-8863.tab
+spec1d-H_I-9015.tab
+spec1d-H_I-9229.tab
+spec1d-He_I-4713.tab
+spec1d-He_I-4922.tab
+spec1d-He_I-5016.tab
+spec1d-He_I-5048.tab
+spec1d-He_I-5876.tab
+spec1d-He_I-6678.tab
+spec1d-He_I-7065.tab
+spec1d-He_I-7160.tab
+spec1d-He_I-7281.tab
+spec1d-He_I-7298.tab
+spec1d-He_I-7500.tab
+spec1d-He_I-7816.tab
+spec1d-He_I-9210.tab
+spec1d-He_II-4686.tab
+spec1d-He_II-5785.tab
+spec1d-N_I-5199.tab
+spec1d-N_I-7424.tab
+spec1d-N_I-7442.tab
+spec1d-N_I-7468.tab
+spec1d-N_I-8223.tab
+spec1d-N_I-8680.tab
+spec1d-N_I-8703.tab
+spec1d-N_I-8712.tab
+spec1d-N_II-4607.tab
+spec1d-N_II-4631.tab
+spec1d-N_II-4803.tab
+spec1d-N_II-5552.tab
+spec1d-N_II-5667.tab
+spec1d-N_II-5680.tab
+spec1d-N_II-5755.tab
+spec1d-N_II-5932.tab
+spec1d-N_II-5942.tab
+spec1d-N_II-5952.tab
+spec1d-N_II-6527.tab
+spec1d-N_II-6548.tab
+spec1d-N_II-6583.tab
+spec1d-N_III-5896.tab
+spec1d-N_III-5901.tab
+spec1d-N_III-5919.tab
+spec1d-N_III-6634.tab
+spec1d-Ne_I-8892.tab
+spec1d-Ni_II-6667.tab
+spec1d-Ni_II-7378.tab
+spec1d-Ni_II-7412.tab
+spec1d-Ni_III-6000.tab
+spec1d-Ni_III-6402.tab
+spec1d-Ni_III-6534.tab
+spec1d-O_I-5147.tab
+spec1d-O_I-5299.tab
+spec1d-O_I-5555.tab
+spec1d-O_I-5577.tab
+spec1d-O_I-6046.tab
+spec1d-O_I-6300.tab
+spec1d-O_I-6364.tab
+spec1d-O_I-7002.tab
+spec1d-O_I-7254.tab
+spec1d-O_I-8446.tab
+spec1d-O_II-4642.tab
+spec1d-O_II-4650.tab
+spec1d-O_II-4676.tab
+spec1d-O_II-5433.tab
+spec1d-O_II-7318.tab
+spec1d-O_II-7330.tab
+spec1d-O_II-7341.tab
+spec1d-O_II-7369.tab
+spec1d-O_III-4959.tab
+spec1d-O_III-5007.tab
+spec1d-O_III-5592.tab
+spec1d-S_II-5454.tab
+spec1d-S_II-6716.tab
+spec1d-S_II-6731.tab
+spec1d-S_III-6312.tab
+spec1d-S_III-9069.tab
+spec1d-Si_II-5041.tab
+spec1d-Si_II-5056.tab
+spec1d-Si_II-5958.tab
+spec1d-Si_II-5979.tab
+spec1d-Si_II-6347.tab
+spec1d-Si_II-6371.tab
+spec1d-Si_III-5740.tab
+spec1d-Si_III-6663.tab
+spec1d-XXX-5906.tab
+spec1d-XXX-8189.tab
+spec1d-XXX-8243.tab
+spec1d-XXX-9032.tab
+spec1d-XXX-9204.tab
+spec1d-XXX-9267.tab
+
+sent 4,555 bytes  received 82,061 bytes  19,248.00 bytes/sec
+total size is 205,451  speedup is 2.37
+#+end_example
 
 ** MUSE maps from the external disk
 + We want copies of these so we can disconnect the disk and still work
@@ -547,7 +717,7 @@ CLOSED: [2016-12-20 Tue 16:34]
 + Show the effects of the pattern removal and binning
 + Show the high-velocity jets
 
-* Spectral plots
+* Spectral plots of "lines of interest"
 + Plots of the 1-D spectra that we have copied to the =spec-data/= folder
 
 #+name: rest-wavs
@@ -603,6 +773,82 @@ CLOSED: [2016-12-20 Tue 16:34]
 
 #+RESULTS:
 [[file:line-profile-wav-grid.pdf]]
+
++ So this plot is not that illuminating really
+
+
+** Mean wavelengths of all the lines
+
+#+BEGIN_SRC python :eval no :tangle line-all-wav-grid.py
+  import os
+  from misc_utils import sanitize_string
+  from astropy.table import Table
+  from matplotlib import pyplot as plt
+  import seaborn as sns
+  import numpy as np
+  from matplotlib.ticker import MultipleLocator, MaxNLocator
+
+  sns.set(style='white')
+
+  linetab = Table.read('basic-line-list.tab', format='ascii.tab')
+
+  figfile = 'line-all-wav-grid.pdf'
+
+  fig, axes = plt.subplots(19, 8, figsize=(20, 30))
+  flaxes = axes.flat
+  for row in linetab:
+      wav0 = row['wav0']
+      wavid = str(int(wav0+0.5))
+      species = sanitize_string(row['Ion'])
+      sname = 'spec-data/spec1d-{}-{}.tab'.format(species, wavid)
+      try:
+          tab = Table.read(sname, format='ascii.tab')
+      except FileNotFoundError:
+          print(sname, 'not found')
+          continue
+      label = '{} {:.2f}'.format(row['Ion'], wav0)
+      netflux = (tab['flux'] - tab['cont'])/tab['cont']
+      mask4 = np.abs(tab['wav'] - wav0) < 4.0
+      mask1 = np.abs(tab['wav'] - wav0) < 1.0
+      ax = next(flaxes)
+      ax.plot(tab['wav'], netflux, label=label, c='r')
+      ax.axhline(0.0,  ls='--', c='b')
+      if netflux[mask1].sum() > 0.0:
+          # Emission line
+          fillcolor = 'r'
+      else:
+          # Absorption line
+          fillcolor = 'b'
+      ax.fill_between(tab['wav'], netflux, where=mask4,
+                      color=fillcolor, alpha=0.3)
+      ax.axvline(wav0, ls='--', color='k')
+      ax.legend(loc='best')
+      margin = 0.2*max(netflux[mask1].max(), -netflux.min())
+      ax.set(
+          xlim=[tab['wav'].min(), tab['wav'].max()],
+          ylim=[netflux.min() - margin,
+		max(0.0, netflux[mask1].max()) + 3*margin],
+      )
+      ax.xaxis.set_major_locator(MultipleLocator(5))
+      ax.yaxis.set_major_locator(MaxNLocator(7))
+
+  axes[-1, 0].set(
+      xlabel='Wavelength, Angstrom', ylabel='Flux',
+  )
+
+  fig.tight_layout()
+  fig.savefig(figfile)
+  print(figfile)
+#+END_SRC
+
+#+BEGIN_SRC sh
+python line-all-wav-grid.py
+#+END_SRC
+
++ Extra things to do with these graphs and the line extraction program:
+  + Put box behind line labels so we can see them better
+  + Refine the continuum selection logic
+  + Use the binned maps to choose the best pixels, so we can get the best line extraction
 
 * Making correlations
 :PROPERTIES:
