@@ -21,26 +21,37 @@ It looks like the sigmas that I measured from MUSE are good enough to find kinem
    - Would be better if we masked out stars before doing it
    - Also, for low s/n data it tends to just make a mess of everything
 2. Issue 1 from [[id:48FD212E-DCA9-4E16-A187-0A8B6467B402][Issues after first day]] is still relevant 
-**** What do do now (after third day)?
-1. Instead of var-var, we could try dvar vs var, which would eliminate the slope to first order
+**** [0/6] What do do now (after third day)?
+:PROPERTIES:
+:ID:       6C8CF009-327B-4B31-B9AC-C67845C88F0A
+:END:
+1. [ ] Instead of var-var, we could try dvar vs var, which would eliminate the slope to first order
    - This is the only task rolled over from [[id:507E217E-A9A2-4118-ABE2-DED220A2F3EF][What to do now (after first day)?]]
    - Also we can remove the instrumental width if we can get a good estimate on that
-2. Further work on the \Delta{}v vs \Delta{}v graphs
-   - Include the multibinning
-   - And have a look at \Delta{}v versus line ratio
-3. Try and deduce instrumental width as function of wavelength to see if there is any systematic pattern to it
+2. [-] Further work on the \Delta{}v vs \Delta{}v graphs
+   - [X] Include the multibinning
+   - [ ] And have a look at \Delta{}v versus line ratio
+3. [ ] Try and deduce instrumental width as function of wavelength to see if there is any systematic pattern to it
    - As far as I can see, it monotonically increases towards the blue
-   - Put lines in groups according to expected intrinsic widths
+   - [ ] Put lines in groups according to expected intrinsic widths
      1) Low-ionization metal lines
      2) high-ionization metal lines
      3) helium lines
      4) hydrogen lines
+   - [ ] Use EW to find a "best" region for extracting the lines
    - Group (1) should have smallest non-istrumental widths, so would in prniciple be best, but there are not many of them
-     - May need to use more lines than we are doing so far
-4. Try and improve the de-patterning
-5. Write up the theory of different contributions to variance and derivation of kinetic temperature
-6. Calculate maps of \Delta\sigma^{2} to see what they look like
-*** TODO [2016-12-18 Sun] After first day
+   - [ ] May need to use more lines than we are doing so far
+     - [ ] Make plot of all the lines
+     - [ ] 
+4. [ ] Try and improve the de-patterning
+5. [ ] Write up the theory of different contributions to variance and derivation of kinetic temperature
+6. [ ] Calculate maps of \Delta\sigma^{2} to see what they look like
+*** DONE [2016-12-18 Sun] After first day
+CLOSED: [2016-12-21 Wed 18:51]
+:LOGBOOK:
+- Note taken on [2016-12-21 Wed 18:51] \\
+  All the TODOS from here have been moved forward to [[id:6C8CF009-327B-4B31-B9AC-C67845C88F0A][What do do now (after third day)?]]
+:END:
 **** Achievements after first day
 1. We have all the data we need (not in github repo because of size)
 2. Made variance-variance plots
@@ -809,11 +820,16 @@ CLOSED: [2016-12-20 Tue 16:34]
       label = '{} {:.2f}'.format(row['Ion'], wav0)
       netflux = (tab['flux'] - tab['cont'])/tab['cont']
       mask4 = np.abs(tab['wav'] - wav0) < 4.0
-      mask1 = np.abs(tab['wav'] - wav0) < 1.0
+      mask2 = np.abs(tab['wav'] - wav0) < 2.0
+      mask_blue = np.abs(tab['wav'] - (wav0 - 6.0)) < 2.0
+      mask_red = np.abs(tab['wav'] - (wav0 + 6.0)) < 2.0
+      margin = 0.2*max(netflux[mask2].max(), -netflux.min())
+      ymin = netflux.min() - margin
+      ymax = max(0.0, netflux[mask2].max()) + 4*margin
       ax = next(flaxes)
       ax.plot(tab['wav'], netflux, label=label, c='r')
       ax.axhline(0.0,  ls='--', c='b')
-      if netflux[mask1].sum() > 0.0:
+      if netflux[mask2].sum() > 0.0:
           # Emission line
           fillcolor = 'r'
       else:
@@ -821,13 +837,17 @@ CLOSED: [2016-12-20 Tue 16:34]
           fillcolor = 'b'
       ax.fill_between(tab['wav'], netflux, where=mask4,
                       color=fillcolor, alpha=0.3)
+      if row['blue cont']:
+          ax.fill_between(tab['wav'], netflux, ymin,
+                          where=mask_blue, color='k', alpha=0.1)
+      if row['red cont']:
+          ax.fill_between(tab['wav'], netflux, ymin,
+                          where=mask_red, color='k', alpha=0.1)
       ax.axvline(wav0, ls='--', color='k')
-      ax.legend(loc='best')
-      margin = 0.2*max(netflux[mask1].max(), -netflux.min())
+      ax.legend(loc='best', frameon=True, framealpha=0.8)
       ax.set(
           xlim=[tab['wav'].min(), tab['wav'].max()],
-          ylim=[netflux.min() - margin,
-		max(0.0, netflux[mask1].max()) + 3*margin],
+          ylim=[ymin, ymax],
       )
       ax.xaxis.set_major_locator(MultipleLocator(5))
       ax.yaxis.set_major_locator(MaxNLocator(7))
@@ -838,17 +858,23 @@ CLOSED: [2016-12-20 Tue 16:34]
 
   fig.tight_layout()
   fig.savefig(figfile)
-  print(figfile)
+  print(figfile, end='')
 #+END_SRC
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC sh :results file
 python line-all-wav-grid.py
 #+END_SRC
 
-+ Extra things to do with these graphs and the line extraction program:
-  + Put box behind line labels so we can see them better
-  + Refine the continuum selection logic
-  + Use the binned maps to choose the best pixels, so we can get the best line extraction
+#+RESULTS:
+[[file:line-all-wav-grid.pdf]]
+
+Refinements to graph:
++ [X] Put box behind line labels so we can see them better
+
+** Extra things to do with the line extraction program
++ This is
++ Refine the continuum selection logic
++ Use the binned maps to choose the best pixels, so we can get the best line extraction
 
 * Making correlations
 :PROPERTIES:
