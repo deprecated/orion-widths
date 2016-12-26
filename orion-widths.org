@@ -111,7 +111,7 @@ cp -av ../OrionMuse/basic-line-list.tab .
 #+END_SRC
 
 #+RESULTS:
-: Tue Dec 20 23:12:30 GMT 2016
+: Mon Dec 26 00:04:37 GMT 2016
 : ../OrionMuse/basic-line-list.tab -> ./basic-line-list.tab
 ** Random python libraries 
 #+BEGIN_SRC sh :results verbatim
@@ -131,7 +131,7 @@ cp -av ../OrionMuse/misc_utils.py .
 
 #+RESULTS:
 #+begin_example
-Wed Dec 21 00:01:23 GMT 2016
+Mon Dec 26 00:30:13 GMT 2016
 receiving incremental file list
 spec1d-Ar_III-5192.tab
 spec1d-Ar_III-7136.tab
@@ -144,7 +144,7 @@ spec1d-C_II-6462.tab
 spec1d-C_II-6578.tab
 spec1d-C_II-7231.tab
 spec1d-C_II-7236.tab
-spec1d-C_II-7531.tab
+spec1d-C_II-7519.tab
 spec1d-C_IV-5801.tab
 spec1d-C_IV-5812.tab
 spec1d-Ca_I-7890.tab
@@ -153,6 +153,7 @@ spec1d-Ca_I-9095.tab
 spec1d-Cl_II-8579.tab
 spec1d-Cl_III-5518.tab
 spec1d-Cl_III-5538.tab
+spec1d-Cl_IV-7531.tab
 spec1d-Cl_IV-8046.tab
 spec1d-Cr_II-8000.tab
 spec1d-DIB-5781.tab
@@ -204,6 +205,7 @@ spec1d-He_I-7281.tab
 spec1d-He_I-7298.tab
 spec1d-He_I-7500.tab
 spec1d-He_I-7816.tab
+spec1d-He_I-8733.tab
 spec1d-He_I-9210.tab
 spec1d-He_II-4686.tab
 spec1d-He_II-5785.tab
@@ -211,8 +213,10 @@ spec1d-N_I-5199.tab
 spec1d-N_I-7424.tab
 spec1d-N_I-7442.tab
 spec1d-N_I-7468.tab
+spec1d-N_I-8216.tab
 spec1d-N_I-8223.tab
 spec1d-N_I-8680.tab
+spec1d-N_I-8686.tab
 spec1d-N_I-8703.tab
 spec1d-N_I-8712.tab
 spec1d-N_II-4607.tab
@@ -244,6 +248,8 @@ spec1d-O_I-5299.tab
 spec1d-O_I-5555.tab
 spec1d-O_I-5577.tab
 spec1d-O_I-6046.tab
+spec1d-O_I-6156.tab
+spec1d-O_I-6257.tab
 spec1d-O_I-6300.tab
 spec1d-O_I-6364.tab
 spec1d-O_I-7002.tab
@@ -263,6 +269,7 @@ spec1d-O_III-5592.tab
 spec1d-S_II-5454.tab
 spec1d-S_II-6716.tab
 spec1d-S_II-6731.tab
+spec1d-S_III-5219.tab
 spec1d-S_III-6312.tab
 spec1d-S_III-9069.tab
 spec1d-Si_II-5041.tab
@@ -274,14 +281,19 @@ spec1d-Si_II-6371.tab
 spec1d-Si_III-5740.tab
 spec1d-Si_III-6663.tab
 spec1d-XXX-5906.tab
+spec1d-XXX-6033.tab
+spec1d-XXX-6328.tab
+spec1d-XXX-6334.tab
+spec1d-XXX-6480.tab
+spec1d-XXX-6490.tab
 spec1d-XXX-8189.tab
 spec1d-XXX-8243.tab
 spec1d-XXX-9032.tab
 spec1d-XXX-9204.tab
 spec1d-XXX-9267.tab
 
-sent 4,555 bytes  received 82,061 bytes  19,248.00 bytes/sec
-total size is 205,451  speedup is 2.37
+sent 5,749 bytes  received 95,145 bytes  1,921.79 bytes/sec
+total size is 235,289  speedup is 2.33
 #+end_example
 
 ** MUSE maps from the external disk
@@ -789,6 +801,9 @@ CLOSED: [2016-12-20 Tue 16:34]
 
 
 ** Mean wavelengths of all the lines
+:PROPERTIES:
+:ID:       1F9D411C-9C16-4F18-AB96-103DC86F80D9
+:END:
 
 #+BEGIN_SRC python :eval no :tangle line-all-wav-grid.py
   import os
@@ -805,7 +820,7 @@ CLOSED: [2016-12-20 Tue 16:34]
 
   figfile = 'line-all-wav-grid.pdf'
 
-  fig, axes = plt.subplots(19, 8, figsize=(20, 30))
+  fig, axes = plt.subplots(20, 8, figsize=(20, 30))
   flaxes = axes.flat
   for row in linetab:
       wav0 = row['wav0']
@@ -872,7 +887,7 @@ Refinements to graph:
 + [X] Put box behind line labels so we can see them better
 
 ** Extra things to do with the line extraction program
-+ This is
++ This is going to be done in the main OrionMuse project
 + Refine the continuum selection logic
 + Use the binned maps to choose the best pixels, so we can get the best line extraction
 

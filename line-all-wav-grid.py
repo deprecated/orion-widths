@@ -12,7 +12,7 @@ linetab = Table.read('basic-line-list.tab', format='ascii.tab')
 
 figfile = 'line-all-wav-grid.pdf'
 
-fig, axes = plt.subplots(19, 8, figsize=(20, 30))
+fig, axes = plt.subplots(20, 8, figsize=(20, 30))
 flaxes = axes.flat
 for row in linetab:
     wav0 = row['wav0']
