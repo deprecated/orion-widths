@@ -111,7 +111,7 @@ cp -av ../OrionMuse/basic-line-list.tab .
 #+END_SRC
 
 #+RESULTS:
-: Mon Dec 26 00:04:37 GMT 2016
+: Mon Dec 26 19:26:25 GMT 2016
 : ../OrionMuse/basic-line-list.tab -> ./basic-line-list.tab
 ** Random python libraries 
 #+BEGIN_SRC sh :results verbatim
@@ -668,6 +668,19 @@ sending incremental file list
 sent 388 bytes  received 12 bytes  800.00 bytes/sec
 total size is 834,606,720  speedup is 2,086,516.80
 :END:
+
+** Even more MUSE maps from the external disk
++ This time, we are going to get all the lines - we have hundreds of GB free, so why not?
+  + The files are in a new folder =~/tmp/musedata/= so that it isn't in Dropbox or git
+
+#+BEGIN_SRC shell :eval no :tangle sync-all-maps-to-internal-disk.sh
+  SRCDIR=~/Dropbox/OrionMuse/LineMaps
+  DESTDIR=~/tmp/musedata
+  rsync -avP $SRCDIR/{linesum,mean,sigma}-*-[0-9][0-9][0-9][0-9].fits $DESTDIR
+#+END_SRC
+
+
+
 ** Mow much data do we have?
 + Space used up in data folder
 #+BEGIN_SRC bash :results verbatim append
@@ -706,6 +719,7 @@ df -h
 + Turns out that I already printed out the value of the heliocentric correction at the end of the OrionMuse heading [[id:9B385AF1-5AA5-4EA2-B1A3-8802C0959808][Program to extract a single line extract-em-line.py]]
   + The value was *-16.217273731*
   + So we need to add that back to all our velocities!
++ [ ] [2016-12-26 Mon 00:51] I have now fixed this at the source, so I need to undo the fix to the fix!
 ** Corrections to the absolute velocities
 + Fig 4 of Weilbacher shows all their mean velocities
 + They are mixing high-ionization and low-ionization lines, so some of the spread is due to that
@@ -1309,6 +1323,32 @@ This is disappointingly circular, implying that the sigma variations for the wea
 ** H beta and He I 5876
 + This is not so good since He line is triplet
 + But it will be a good independent test
+
+** [Ar III] 7135 versus He I 7065.28
++ This looked the perfect pair
++ The mean velocities and intensities are excellently correlated
++ And the He I line is slightly broader
++ But the damn He I line is a triplet
+  + I get mean wavelength as
+    + (7065.17714 1.55E+07 + 7065.21530 9.32E+06 + 7065.70861 3.10E+06) / (1.55E+07 + 9.32E+06 + 3.10E+06)
+    + 7065.24888814
+  + And sigma is
+    + sqrt(((7065.17714 - 7065.24890)**2 1.55E+07 + (7065.21530 - 7065.24890)**2 9.32E+06 + (7065.70861 - 7065.24890)**2 3.10E+06) / (1.55E+07 + 9.32E+06 + 3.10E+06))
+    + 0.163402256115 Ang
+    + 3e5 0.163402256115 / 7065.24888814 = 6.94 km/s
+  + Thermal sigma should be (1/2) (20/2.3) = 4.35 km/s
+    + So that may be challenging to measure
++ Measurements are about 44.25 vs 42.75 km/s, so quadrature difference is sqrt(44.25**2 - 42.75**2) = 11.42
+  + So that would give difference of sqrt(11.42**2 - 6.94**2) = 9.07, which is too big
+
+
+
+| LAB-WAVL-ANG-AIR- | -SPC- | TT | CONFIGURATION | -TERM-- | J_i-J_k | --A_ki-- | -TPF- | --LEVEL-ENERGY--EV---   | -REF--- |
+|-------------------+-------+----+---------------+---------+---------+----------+-------+-------------------------+---------|
+|        7065.17714 | He I  | E1 | 1s.2p-1s.3s   | 3Po-3S  | 2  -  1 | 1.55E+07 |     3 | 20.964085  -  22.718464 |     112 |
+|        7065.21530 | He I  | E1 | 1s.2p-1s.3s   | 3Po-3S  | 1  -  1 | 9.32E+06 |     3 | 20.964095  -  22.718464 |     112 |
+|        7065.70861 | He I  | E1 | 1s.2p-1s.3s   | 3Po-3S  | 0  -  1 | 3.10E+06 |     3 | 20.964217  -  22.718464 |     112 |
+
 
 ** Redder lines
 + We have H I 9229
