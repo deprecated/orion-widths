@@ -754,6 +754,177 @@ CLOSED: [2016-12-20 Tue 16:34]
 + Show the effects of the pattern removal and binning
 + Show the high-velocity jets
 
+
+* TODO Differences of variance
+Make FITS maps of  (\sigma^{2} - \sigma^{2}), which is the fundamental quantity proportional to the temperature
+
+#+name: delta-variance
+#+header: :var LINE_A="He_I-7065" LINE_B="Ar_III-7136"
+#+header: :var D="~/tmp/musedata" N=4 X=""
+#+header: :var FMT="sigma-{0}{2}-bin{1:03d}.fits"
+#+header: :var OUTFMT="delta-var-{0}-{1}{3}-bin{2:03d}.fits"
+#+BEGIN_SRC python :return fnC :results verbatim
+  import os
+  import numpy as np
+  from astropy.io import fits
+
+  dd = os.path.expanduser(D)
+
+  fnA = os.path.join(dd, FMT.format(LINE_A, N, X))
+  fnB = os.path.join(dd, FMT.format(LINE_B, N, X))
+
+  hduA = fits.open(fnA)['SCALED']
+  hduB = fits.open(fnB)['SCALED']
+
+  fnC = os.path.join(dd, OUTFMT.format(LINE_A, LINE_B, N, X))
+
+  fits.PrimaryHDU(
+      header=hduA.header,
+      data=hduA.data**2 - hduB.data**2
+  ).writeto(fnC, clobber=True)
+#+END_SRC
+
+#+RESULTS: delta-variance
+: /Users/will/tmp/musedata/delta-var-He_I-7065-Ar_III-7136-bin004.fits
+
+#+call: delta-variance(N=64)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-He_I-7065-Ar_III-7136-bin064.fits
+
+#+call: delta-variance(N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-He_I-7065-Ar_III-7136-bin016.fits
+
+
+** Delta variance [N II] 6583 and 6548
+#+call: delta-variance(LINE_A="N_II-6548", LINE_B="N_II-6583", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-N_II-6548-N_II-6583-bin016.fits
+
++ There is a lot of structure in this map, which seems to reflect the C II 6578.05  contribution to the N II line
++ The \Delta\sigma^{2} varies from -200 to -50
++ We should plot \Delta\sigma^{2} against C II 7236 / [N II]
+  + And extrapolate to zero - in principle, it should be linear
+** Delta variance H alpha and [N II] 6548, or 6583
+#+call: delta-variance(LINE_A="H_I-6563", LINE_B="N_II-6548", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-H_I-6563-N_II-6548-bin016.fits
+
+#+call: delta-variance(LINE_A="H_I-6563", LINE_B="N_II-6583", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-H_I-6563-N_II-6583-bin016.fits
+** Delta variance of [O III] 4959 and 5007
+#+call: delta-variance(LINE_A="O_III-4959", LINE_B="O_III-5007", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-O_III-4959-O_III-5007-bin016.fits
+
+
+** Delta variance H beta and [O III] 4959, or 5007
+
+#+call: delta-variance(LINE_A="H_I-4861", LINE_B="O_III-5007", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-H_I-4861-O_III-5007-bin016.fits
+
+#+call: delta-variance(LINE_A="H_I-4861", LINE_B="O_III-4959", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-H_I-4861-O_III-4959-bin016.fits
+
+
+** Delta variance H alpha and He I 6678
+#+call: delta-variance(LINE_A="H_I-6563", LINE_B="He_I-6678", N=64)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-H_I-6563-He_I-6678-bin064.fits
+
++ Looks OK, but a bit high
+  + Average value is about 180 in raw one
+  + Patfixx version has much worse artefacts, so we need to deal with that
+    + And average value is lower: about 100
+  + Remove the FS variance of 10.233
+  + T4 multiplier is 82.5 (1 - 1/4) = 61.875 => T4 = 1.6, which is too high
+  + But we still need to look at varation in instrumental width between 6563 and 6678 
+
+#+call: delta-variance(LINE_A="H_I-6563", LINE_B="He_I-6678", D="data", X="-patfixx", N=16)
+
+#+RESULTS:
+: data/delta-var-H_I-6563-He_I-6678-patfixx-bin016.fits
+
+#+call: delta-variance(LINE_A="H_I-6563", LINE_B="He_I-6678", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-H_I-6563-He_I-6678-bin016.fits
+
+
+
+* Interpolating [O III] width to H beta wavelength
++ 5006.84 - 4959.91 = 46.93
++ 4959.91 - 4861.32 = 98.59
++ 98.59/46.93 = 2.10079
++ So we can take Var([O III] @ 4861) to be either of 
+  + Var(4959) - 2.10079 [Var(4959) - Var(5007)]
+  + Var(5007) - 3.10079 [Var(4959) - Var(5007)]
++ And we calculate Var(4861) - Var([O III] @ 4861)
+
+#+name: extrapolated-delta-variance
+#+header: :var LINE_A="H_I-4861" 
+#+header: :var LINE_B1="O_III-4959" LINE_B2="O_III-5007"
+#+header: :var FACTOR=2.10079
+#+header: :var D="~/tmp/musedata" N=64 X="" 
+#+header: :var FMT="sigma-{0}{2}-bin{1:03d}.fits"
+#+header: :var OUTFMT="delta-var-{0}-{1}{3}-bin{2:03d}.fits"
+#+BEGIN_SRC python :return fnC :results verbatim
+  import os
+  import numpy as np
+  from astropy.io import fits
+
+  ionA, wavA = LINE_A.split('-')
+  ionB, wav1 = LINE_B1.split('-')
+  _, wav2 = LINE_B2.split('-')
+  assert _ == ionB, 'Ions B1, B2 must be the same: {}, {}'.format(ionB, _)
+
+  dd = os.path.expanduser(D)
+
+  fnA = os.path.join(dd, FMT.format(LINE_A, N, X))
+  fnB1 = os.path.join(dd, FMT.format(LINE_B1, N, X))
+  fnB2 = os.path.join(dd, FMT.format(LINE_B2, N, X))
+
+  hduA = fits.open(fnA)['SCALED']
+  hduB1 = fits.open(fnB1)['SCALED']
+  hduB2 = fits.open(fnB2)['SCALED']
+
+  extrapolated_variance = hduB1.data**2 + FACTOR*(hduB1.data**2 - hduB2.data**2)
+
+  line_b = '{}-at-{}'.format(ionB, wavA)
+  fnC = os.path.join(dd, OUTFMT.format(LINE_A, line_b, N, X))
+
+  fits.PrimaryHDU(
+      header=hduA.header,
+      data=hduA.data**2 - extrapolated_variance
+  ).writeto(fnC, clobber=True)
+#+END_SRC
+
+#+RESULTS: extrapolated-delta-variance
+: /Users/will/tmp/musedata/delta-var-H_I-4861-O_III-at-4861-bin064.fits
+
++ This is reasonable, but the final map could do with more tweaking.
++ The variation in 4959 - 5007 within the patches looks reasonable
++ But it goes funny in the fainter parts to the east
+  + So maybe take average within patch, like we did with the patfic stuffZ 
++ Now try the same, but with the patfixx versions
+
+#+call: extrapolated-delta-variance(D="data", X="-patfixx")
+
+#+RESULTS:
+: data/delta-var-H_I-4861-O_III-at-4861-patfixx-bin064.fits
+
 * Spectral plots of "lines of interest"
 + Plots of the 1-D spectra that we have copied to the =spec-data/= folder
 
@@ -1295,6 +1466,7 @@ This is disappointingly circular, implying that the sigma variations for the wea
 
 #+RESULTS:
 [[file:hist-dv-6563-6678-dv-4861-5876.png]]
+
 
 
 * Comments on individual line sets
