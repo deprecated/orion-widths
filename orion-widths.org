@@ -8,6 +8,15 @@ It looks like the sigmas that I measured from MUSE are good enough to find kinem
 
 ** Status and next steps 
 
+*** [2016-12-30 Fri] After twelve days - HIATUS
++ This project is stagnating, and it isn't clear that it will ever work
++ I need to get back to more useful things, like the Alba knots
+**** What we have shown
++ Some line pairs have promuse for determining the T but in all cases there are serious issues
+  + [O III] - H beta :: This is in the blue, which has the worst instrumental width.  Extrapolating the width from 5007 - 4959 \to 4861 sort of works, but it varies according to whether we do the depatterning or not
+  + [N II] - H alpha :: This is better since instrumental widths are smaller and the two [N II] lines straddle H alpha.  But there is an issue with the C II contribution to 6583 (although I am not 100% sure that is the case, need to theoretically calculate contribution to sigma) and the resultant maps show a lot of structure, which must be due to the changing ionization structure and differences in non-thermal broadening between the [N II] and [O III] zones.
+  + H lines to He lines :: Issue with triplet broadenings for the He I 5875 line, so haven't tried that yet.  H alpha and He I 6678 give a naive T of 16,000 K, which is too high, so we need to take account of instrumental broadening increasing from 6678 to 6563, which is 1.75% change in wavelength.
+  + [Ar III] - He :: This is the best-measured delta variance.  BUT it is 4 times less sensitive as a T indicator because it is the He not H that measures the thermal broadening.  Again, a naive delta variance subtraction gives a T that is too high, but we need to account for the instrumental width increasing from 7136 to 7065 (a change in lambda of 1%)
 *** [2016-12-20 Tue] After third day
 **** Achievements after third day
 1. Removed fixed pattern noise
@@ -21,7 +30,7 @@ It looks like the sigmas that I measured from MUSE are good enough to find kinem
    - Would be better if we masked out stars before doing it
    - Also, for low s/n data it tends to just make a mess of everything
 2. Issue 1 from [[id:48FD212E-DCA9-4E16-A187-0A8B6467B402][Issues after first day]] is still relevant 
-**** [0/6] What do do now (after third day)?
+**** [1/6] What do do now (after third day)?
 :PROPERTIES:
 :ID:       6C8CF009-327B-4B31-B9AC-C67845C88F0A
 :END:
@@ -45,7 +54,7 @@ It looks like the sigmas that I measured from MUSE are good enough to find kinem
      - [ ] 
 4. [ ] Try and improve the de-patterning
 5. [ ] Write up the theory of different contributions to variance and derivation of kinetic temperature
-6. [ ] Calculate maps of \Delta\sigma^{2} to see what they look like
+6. [X] Calculate maps of \Delta\sigma^{2} to see what they look like
 *** DONE [2016-12-18 Sun] After first day
 CLOSED: [2016-12-21 Wed 18:51]
 :LOGBOOK:
@@ -593,7 +602,7 @@ linesum-S_III-9069-bin016.fits
 linesum-S_III-9069-bin032.fits
          32,768   0%   72.07kB/s    0:10:10       44,049,600 100%   56.31MB/s    0:00:00 (xfr#6, to-chk=3/9)
 linesum-S_III-9069-bin064.fits
-         32,768   0%   42.84kB/s    0:17:07       37,584,896  85%   35.84MB/s    0:00:00       44,049,600 100%   40.39MB/s    0:00:01 (xfr#7, to-chk=2/9)
+         32,768   0%   42.84kB/s    0:17:07       37,584,896  85%   35.84MB/s    <0:00:00       44,049,600 100%   40.39MB/s    0:00:01 (xfr#7, to-chk=2/9)
 linesum-S_III-9069-bin128.fits
          32,768   0%  761.90kB/s    0:00:57       44,049,600 100%  123.19MB/s    0:00:00 (xfr#8, to-chk=1/9)
 linesum-S_III-9069-bin256.fits
@@ -862,6 +871,13 @@ Make FITS maps of  (\sigma^{2} - \sigma^{2}), which is the fundamental quantity 
 #+RESULTS:
 : /Users/will/tmp/musedata/delta-var-H_I-6563-He_I-6678-bin016.fits
 
+
+
+** Delta variance He I 7065.28 and [Ar III] 7135
+#+call: delta-variance(LINE_A="He_I-7065", LINE_B="Ar_III-7136", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-He_I-7065-Ar_III-7136-bin016.fits
 
 
 * Interpolating [O III] width to H beta wavelength
@@ -1469,6 +1485,17 @@ This is disappointingly circular, implying that the sigma variations for the wea
 
 
 
+
+
+* TODO Deviations from Gaussianity
+Taking sums and differences of variance will only work so long as the profiles are Gaussian.  For other shapes, this is not strictly valid.  
+
+Applications to: 
+1. Fine structure profiles.  These are just a collection of dirac deltas
+2. Non-thermal profile.  Will not be Gaussian
+3. Instrumental profile.  We can look at the [O I] 5577.34 profile
+4. Undersampling effects.  What variations in the measured sigma can we expect due to the undersampling of the profile.
+   - Calculate how sigma varies as the line center is moved with respect to the pixel center
 * Comments on individual line sets
 
 ** H alpha and [N II]
@@ -1496,7 +1523,7 @@ This is disappointingly circular, implying that the sigma variations for the wea
 + This is not so good since He line is triplet
 + But it will be a good independent test
 
-** [Ar III] 7135 versus He I 7065.28
+** [Ar III] 7136 versus He I 7065.28
 + This looked the perfect pair
 + The mean velocities and intensities are excellently correlated
 + And the He I line is slightly broader
