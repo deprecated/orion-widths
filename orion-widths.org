@@ -12,7 +12,7 @@ It looks like the sigmas that I measured from MUSE are good enough to find kinem
 + This project is stagnating, and it isn't clear that it will ever work
 + I need to get back to more useful things, like the Alba knots
 **** What we have shown
-+ Some line pairs have promuse for determining the T but in all cases there are serious issues
++ Some line pairs have promise for determining the T but in all cases there are serious issues
   + [O III] - H beta :: This is in the blue, which has the worst instrumental width.  Extrapolating the width from 5007 - 4959 \to 4861 sort of works, but it varies according to whether we do the depatterning or not
   + [N II] - H alpha :: This is better since instrumental widths are smaller and the two [N II] lines straddle H alpha.  But there is an issue with the C II contribution to 6583 (although I am not 100% sure that is the case, need to theoretically calculate contribution to sigma) and the resultant maps show a lot of structure, which must be due to the changing ionization structure and differences in non-thermal broadening between the [N II] and [O III] zones.
   + H lines to He lines :: Issue with triplet broadenings for the He I 5875 line, so haven't tried that yet.  H alpha and He I 6678 give a naive T of 16,000 K, which is too high, so we need to take account of instrumental broadening increasing from 6678 to 6563, which is 1.75% change in wavelength.
@@ -1092,6 +1092,309 @@ Refinements to graph:
 + Refine the continuum selection logic
 + Use the binned maps to choose the best pixels, so we can get the best line extraction
 
+
+* New correlations within a single line
++ Unlike the [[id:D0BF70CD-55F8-4BA0-A2B1-8C5BE79642FA][other correlation graphs]] below, these are
+  1. For correlations between different moments of the same line
+  2. Using the wider set of lines, which hasn't been patfixxed yet
+
+
+** Sigma vs brightness
+
+#+name: bright-sigma-plot
+#+header: :var LINE="O_I-8446" D="~/tmp/musedata"
+#+header: :var BMIN=500 BMAX=200000 SMIN=00.0 SMAX=100.0 GAMMA=1.0 NBIN=50
+#+BEGIN_SRC python :results file :return plotfile
+  import os
+  import numpy as np
+  from astropy.io import fits
+  from matplotlib import pyplot as plt
+  from matplotlib.ticker import (MultipleLocator, LogLocator, 
+				 MaxNLocator, FormatStrFormatter)
+  import seaborn as sns
+
+  VHEL = -16.217273731
+
+  dd = os.path.expanduser(D)
+
+  plotfile = 'hist-bright-sigma-{}.png'.format(LINE)
+  sns.set(style='whitegrid', font_scale=1.0, color_codes=True)
+  fig, axes = plt.subplots(2, 2, figsize=(5, 5), sharex=True, sharey=True)
+
+  nbins = [1, 4, 16, 64]
+
+  for ax, nbin in zip(axes.flat, nbins):
+
+      binsuffix = 'bin{:03d}'.format(nbin)
+      sfn = os.path.join(dd, 'sigma-{}-{}.fits'.format(LINE, binsuffix))
+      bfn = os.path.join(dd, 'linesum-{}-{}.fits'.format(LINE, binsuffix))
+      hdu_name = 'SCALED'
+
+      sigma = fits.open(sfn)[hdu_name].data
+      bright = fits.open(bfn)[hdu_name].data
+
+
+      # Uniform weights for now
+      w = np.ones_like(bright).astype(bool)
+
+      m = (np.isfinite(sigma + bright) & (sigma > 0.0) & (bright > 0.0))
+
+      msg = 'Binning {0} x {0}\n{1} map pixels'.format(nbin, m.sum()//(nbin*nbin))
+      xmin, xmax = np.log10(BMIN), np.log10(BMAX)
+      ymin, ymax = SMIN, SMAX
+      H, xedges, yedges = np.histogram2d(np.log10(bright[m]), sigma[m], 
+					 bins=[NBIN, NBIN],
+					 range=[[xmin, xmax], [ymin, ymax]],
+					 weights=w[m]
+					)
+
+
+      # sns.distplot(xsig[m]**2, kde=False, hist_kws={'range': [0, 1.5*SIGMAX**2]})
+      ax.imshow((H.T)**(1.0/GAMMA), 
+		extent=[xmin, xmax, ymin, ymax], 
+		interpolation='none', aspect='auto', 
+		origin='lower', cmap=plt.cm.gray_r)
+
+      ax.text(0.5, 0.98, msg, ha='center', va='top',
+              fontsize='xx-small', bbox={'color': 'w', 'alpha': 0.7},
+              transform=ax.transAxes)
+      ax.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+      ax.xaxis.set_major_locator(MaxNLocator(4, integer=True))
+      ax.yaxis.set_major_formatter(FormatStrFormatter('%d'))
+      ax.yaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
+
+
+  axes[1, 0].set(
+      xlabel='Log line brightness: ' + LINE,
+      ylabel='RMS line width: ' + LINE,
+      xlim=[xmin, xmax],
+      ylim=[ymin, ymax],
+  )
+  fig.tight_layout()
+  fig.savefig(plotfile, dpi=200)
+#+END_SRC
+
+#+RESULTS: bright-sigma-plot
+[[file:hist-bright-sigma-O_I-8446.png]]
+
+#+call: bright-sigma-plot(LINE="O_I-8446", BMIN=1000, BMAX=200000, SMIN=25.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-O_I-8446.png]]
+
+
+#+call: bright-sigma-plot(LINE="O_I-5577", BMIN=6000, BMAX=15000, SMIN=60.0, SMAX=120.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-O_I-5577.png]]
+
+#+call: bright-sigma-plot(LINE="S_III-9069", BMIN=30000, BMAX=5000000, SMIN=30.0, SMAX=45.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-S_III-9069.png]]
+
+#+call: bright-sigma-plot(LINE="O_I-6300", BMIN=3000, BMAX=200000, SMIN=30.0, SMAX=90.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-O_I-6300.png]]
+
+#+call: bright-sigma-plot(LINE="S_III-6312", BMIN=3000, BMAX=200000, SMIN=30.0, SMAX=90.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-S_III-6312.png]]
+
+#+call: bright-sigma-plot(LINE="O_I-6364", BMIN=1000, BMAX=70000, SMIN=30.0, SMAX=90.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-O_I-6364.png]]
+
+#+call: bright-sigma-plot(LINE="H_I-6563", BMIN=300000, BMAX=30000000, SMIN=40.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-6563.png]]
+
+#+call: bright-sigma-plot(LINE="N_II-6583", BMIN=60000, BMAX=6000000, SMIN=40.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-N_II-6583.png]]
+
+#+call: bright-sigma-plot(LINE="N_II-6548", BMIN=20000, BMAX=2000000, SMIN=40.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-N_II-6548.png]]
+
+#+call: bright-sigma-plot(LINE="He_I-6678", BMIN=5000, BMAX=500000, SMIN=40.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-He_I-6678.png]]
+
+#+call: bright-sigma-plot(LINE="S_II-6716", BMIN=10000, BMAX=300000, SMIN=35.0, SMAX=55.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-S_II-6716.png]]
+
+#+call: bright-sigma-plot(LINE="S_II-6731", BMIN=15000, BMAX=450000, SMIN=35.0, SMAX=55.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-S_II-6731.png]]
+
+
+#+call: bright-sigma-plot(LINE="O_I-7002", BMIN=1000, BMAX=100000, SMIN=0.0, SMAX=150.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-O_I-7002.png]]
+
+#+call: bright-sigma-plot(LINE="Ar_III-7136", BMIN=15000, BMAX=1500000, SMIN=35.0, SMAX=55.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-Ar_III-7136.png]]
+
+#+call: bright-sigma-plot(LINE="Ar_III-7751", BMIN=4000, BMAX=400000, SMIN=35.0, SMAX=55.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-Ar_III-7751.png]]
+
+#+call: bright-sigma-plot(LINE="He_I-7065", BMIN=7000, BMAX=700000, SMIN=35.0, SMAX=55.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-He_I-7065.png]]
+
+#+call: bright-sigma-plot(LINE="C_II-7231", BMIN=500, BMAX=30000, SMIN=0.0, SMAX=150.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-C_II-7231.png]]
+
+#+call: bright-sigma-plot(LINE="C_II-7236", BMIN=500, BMAX=30000, SMIN=0.0, SMAX=150.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-C_II-7236.png]]
+
+#+call: bright-sigma-plot(LINE="He_I-7281", BMIN=1000, BMAX=100000, SMIN=35.0, SMAX=55.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-He_I-7281.png]]
+
+#+call: bright-sigma-plot(LINE="Ca_I-7890", BMIN=500, BMAX=20000, SMIN=0.0, SMAX=155.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-Ca_I-7890.png]]
+
+*** H I lines in the red
+
+#+call: bright-sigma-plot(LINE="H_I-8438", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-8438.png]]
+
+#+call: bright-sigma-plot(LINE="H_I-8467", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-8467.png]]
+
+#+call: bright-sigma-plot(LINE="H_I-8502", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-8502.png]]
+
+#+call: bright-sigma-plot(LINE="H_I-8545", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-8545.png]]
+
+#+call: bright-sigma-plot(LINE="H_I-8598", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-8598.png]]
+
+#+call: bright-sigma-plot(LINE="H_I-8665", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-8665.png]]
+
+#+call: bright-sigma-plot(LINE="H_I-8750", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-8750.png]]
+
++ Strangely, 8750 has the smallest width, falling down as low as 35 km/s
+  + This is odd because the naive expectation is for the instrumental width to fall  with increasing lambda
+  + Furthermore, this ocsurs not at the highest brightness, but at intermediate brightnesses.  But the reason for this seems to be contamination by a high ionization line that puts up the width a bit in the bright central regions
+
+#+call: bright-sigma-plot(LINE="H_I-8863", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-8863.png]]
+
+
+#+call: bright-sigma-plot(LINE="H_I-9015", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-9015.png]]
+
+#+call: bright-sigma-plot(LINE="H_I-9229", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-9229.png]]
+
+
+*** Blue lines
+
+#+call: bright-sigma-plot(LINE="Fe_III-4658", BMIN=1000, BMAX=1000000, SMIN=60.0, SMAX=150.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-Fe_III-4658.png]]
+
+#+call: bright-sigma-plot(LINE="He_I-4713", BMIN=1000, BMAX=1000000, SMIN=60.0, SMAX=150.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-He_I-4713.png]]
+
+#+call: bright-sigma-plot(LINE="H_I-4861", BMIN=30000, BMAX=30000000, SMIN=60.0, SMAX=90.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-4861.png]]
+
+
+#+call: bright-sigma-plot(LINE="He_I-4922", BMIN=1000, BMAX=1000000, SMIN=60.0, SMAX=150.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-He_I-4922.png]]
+
+#+call: bright-sigma-plot(LINE="O_III-4959", BMIN=30000, BMAX=30000000, SMIN=60.0, SMAX=90.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-O_III-4959.png]]
+
+#+call: bright-sigma-plot(LINE="O_III-5007", BMIN=30000, BMAX=30000000, SMIN=60.0, SMAX=90.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-O_III-5007.png]]
+
+#+call: bright-sigma-plot(LINE="Fe_III-5270", BMIN=1000, BMAX=200000, SMIN=50.0, SMAX=120.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-Fe_III-5270.png]]
+
+#+call: bright-sigma-plot(LINE="Cl_III-5518", BMIN=1000, BMAX=200000, SMIN=50.0, SMAX=120.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-Cl_III-5518.png]]
+
+#+call: bright-sigma-plot(LINE="Cl_III-5538", BMIN=1000, BMAX=200000, SMIN=50.0, SMAX=120.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-Cl_III-5538.png]]
+
+#+call: bright-sigma-plot(LINE="N_II-5755", BMIN=1000, BMAX=200000, SMIN=50.0, SMAX=120.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-N_II-5755.png]]
+
+#+call: bright-sigma-plot(LINE="He_I-5876", BMIN=10000, BMAX=2000000, SMIN=45.0, SMAX=75.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-He_I-5876.png]]
+
 * Making correlations
 :PROPERTIES:
 :ID:       D0BF70CD-55F8-4BA0-A2B1-8C5BE79642FA
@@ -1491,7 +1794,10 @@ This is disappointingly circular, implying that the sigma variations for the wea
 Taking sums and differences of variance will only work so long as the profiles are Gaussian.  For other shapes, this is not strictly valid.  
 
 Applications to: 
-1. Fine structure profiles.  These are just a collection of dirac deltas
+1. Fine structure profiles.  These are just a collection of dirac deltas, with typical separation say \delta{}u
+   - Explicitly calculate variance as a function of gaussian smoothing \sigma of one of these profiles
+   - I would image it to be sub-linear for \sigma < \delta{}u
+   - But our case is usually \sigma \approx \delta{}u, so we might be OK
 2. Non-thermal profile.  Will not be Gaussian
 3. Instrumental profile.  We can look at the [O I] 5577.34 profile
 4. Undersampling effects.  What variations in the measured sigma can we expect due to the undersampling of the profile.
