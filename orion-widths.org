@@ -8,6 +8,7 @@ It looks like the sigmas that I measured from MUSE are good enough to find kinem
 
 ** Status and next steps 
 
+*** 
 *** [2016-12-30 Fri] After twelve days - HIATUS
 + This project is stagnating, and it isn't clear that it will ever work
 + I need to get back to more useful things, like the Alba knots
@@ -879,6 +880,31 @@ Make FITS maps of  (\sigma^{2} - \sigma^{2}), which is the fundamental quantity 
 #+RESULTS:
 : /Users/will/tmp/musedata/delta-var-He_I-7065-Ar_III-7136-bin016.fits
 
+** Delta variance H I 9015 and [S III] 9069
+#+call: delta-variance(LINE_A="H_I-9015", LINE_B="S_III-9069", N=64)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-H_I-9015-S_III-9069-bin064.fits
+
+And the other lines to be sure
+#+call: delta-variance(LINE_A="H_I-9229", LINE_B="S_III-9069", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-H_I-9229-S_III-9069-bin016.fits
+
+#+call: delta-variance(LINE_A="H_I-8863", LINE_B="S_III-9069", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-H_I-8863-S_III-9069-bin016.fits
+
+#+call: delta-variance(LINE_A="H_I-8750", LINE_B="S_III-9069", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-H_I-8750-S_III-9069-bin016.fits
+
+
+For this to work, we need to deal with the sky O2 and OH lines, and the N I multiplet
+
 
 * Interpolating [O III] width to H beta wavelength
 + 5006.84 - 4959.91 = 46.93
@@ -1188,7 +1214,7 @@ Refinements to graph:
 #+RESULTS:
 [[file:hist-bright-sigma-O_I-5577.png]]
 
-#+call: bright-sigma-plot(LINE="S_III-9069", BMIN=30000, BMAX=5000000, SMIN=30.0, SMAX=45.0)
+#+call: bright-sigma-plot(LINE="S_III-9069", BMIN=70000, BMAX=7000000, SMIN=30.0, SMAX=60.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-S_III-9069.png]]
@@ -1861,6 +1887,7 @@ Applications to:
   + But only strong option for comparison is [S III] 9069
   + Which would need correcting for both [S II] /and/ [S IV]
   + But we could also use H I 9015 to interpolate to 9069 position
+  + 
 + Then there is the [Ar III] 7137, 7751
   + Which could maybe be compared with H I 8438, etc
   + But it isn't really until we get to H I 8750 that the data quality is any good
