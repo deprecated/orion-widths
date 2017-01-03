@@ -8,7 +8,8 @@ It looks like the sigmas that I measured from MUSE are good enough to find kinem
 
 ** Status and next steps 
 
-*** 
+*** [2017-01-02 Mon] Last gasp
++ The project is getting harder and harder
 *** [2016-12-30 Fri] After twelve days - HIATUS
 + This project is stagnating, and it isn't clear that it will ever work
 + I need to get back to more useful things, like the Alba knots
@@ -1125,6 +1126,82 @@ Refinements to graph:
   2. Using the wider set of lines, which hasn't been patfixxed yet
 
 
+
+** Mean velocity vs brightness
+#+name: bright-vmean-plot
+#+header: :var LINE="O_I-8446" D="~/tmp/musedata"
+#+header: :var BMIN=500 BMAX=200000 VMIN=-100.0 VMAX=100.0 GAMMA=1.0 NBIN=50
+#+BEGIN_SRC python :results file :return plotfile
+  import os
+  import numpy as np
+  from astropy.io import fits
+  from matplotlib import pyplot as plt
+  from matplotlib.ticker import (MultipleLocator, LogLocator, 
+				 MaxNLocator, FormatStrFormatter)
+  import seaborn as sns
+
+  VHEL = -16.217273731
+
+  dd = os.path.expanduser(D)
+
+  plotfile = 'hist-bright-vmean-{}.png'.format(LINE)
+  sns.set(style='whitegrid', font_scale=1.0, color_codes=True)
+  fig, axes = plt.subplots(2, 2, figsize=(5, 5), sharex=True, sharey=True)
+
+  nbins = [1, 4, 16, 64]
+
+  for ax, nbin in zip(axes.flat, nbins):
+
+      binsuffix = 'bin{:03d}'.format(nbin)
+      vfn = os.path.join(dd, 'mean-{}-{}.fits'.format(LINE, binsuffix))
+      bfn = os.path.join(dd, 'linesum-{}-{}.fits'.format(LINE, binsuffix))
+      hdu_name = 'SCALED'
+
+      vmean = fits.open(vfn)[hdu_name].data
+      bright = fits.open(bfn)[hdu_name].data
+
+
+      # Uniform weights for now
+      w = np.ones_like(bright).astype(bool)
+
+      m = (np.isfinite(vmean + bright) & (vmean != 0.0) & (bright > 0.0))
+
+      msg = 'Binning {0} x {0}\n{1} map pixels'.format(nbin, m.sum()//(nbin*nbin))
+      xmin, xmax = np.log10(BMIN), np.log10(BMAX)
+      ymin, ymax = VMIN, VMAX
+      H, xedges, yedges = np.histogram2d(np.log10(bright[m]), vmean[m], 
+					 bins=[NBIN, NBIN],
+					 range=[[xmin, xmax], [ymin, ymax]],
+					 weights=w[m]
+					)
+
+
+      # sns.distplot(xsig[m]**2, kde=False, hist_kws={'range': [0, 1.5*SIGMAX**2]})
+      ax.imshow((H.T)**(1.0/GAMMA), 
+		extent=[xmin, xmax, ymin, ymax], 
+		interpolation='none', aspect='auto', 
+		origin='lower', cmap=plt.cm.gray_r)
+      if ymin < VHEL:
+          ax.axhline(VHEL, ls='--', lw=1)
+      ax.text(0.5, 0.98, msg, ha='center', va='top',
+              fontsize='xx-small', bbox={'color': 'w', 'alpha': 0.7},
+              transform=ax.transAxes)
+      ax.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+      ax.xaxis.set_major_locator(MaxNLocator(4, integer=True))
+      ax.yaxis.set_major_formatter(FormatStrFormatter('%d'))
+      ax.yaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
+
+
+  axes[1, 0].set(
+      xlabel='Log line brightness: ' + LINE,
+      ylabel='Mean heliocentric line velocity: ' + LINE,
+      xlim=[xmin, xmax],
+      ylim=[ymin, ymax],
+  )
+  fig.tight_layout()
+  fig.savefig(plotfile, dpi=200)
+
+#+END_SRC
 ** Sigma vs brightness
 
 #+name: bright-sigma-plot
@@ -1203,97 +1280,207 @@ Refinements to graph:
 #+RESULTS: bright-sigma-plot
 [[file:hist-bright-sigma-O_I-8446.png]]
 
+** [O I] and [S III] lines
 #+call: bright-sigma-plot(LINE="O_I-8446", BMIN=1000, BMAX=200000, SMIN=25.0, SMAX=60.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-O_I-8446.png]]
 
+#+call: bright-vmean-plot(LINE="O_I-8446", BMIN=1000, BMAX=200000, VMIN=15.0, VMAX=40.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_I-8446.png]]
 
 #+call: bright-sigma-plot(LINE="O_I-5577", BMIN=6000, BMAX=15000, SMIN=60.0, SMAX=120.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-O_I-5577.png]]
 
+#+call: bright-vmean-plot(LINE="O_I-5577", BMIN=4000, BMAX=20000, VMIN=-45, VMAX=15)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_I-5577.png]]
+
+
 #+call: bright-sigma-plot(LINE="S_III-9069", BMIN=70000, BMAX=7000000, SMIN=30.0, SMAX=60.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-S_III-9069.png]]
+
+#+call: bright-vmean-plot(LINE="S_III-9069", BMIN=70000, BMAX=7000000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-S_III-9069.png]]
 
 #+call: bright-sigma-plot(LINE="O_I-6300", BMIN=3000, BMAX=200000, SMIN=30.0, SMAX=90.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-O_I-6300.png]]
 
-#+call: bright-sigma-plot(LINE="S_III-6312", BMIN=3000, BMAX=200000, SMIN=30.0, SMAX=90.0)
+#+call: bright-vmean-plot(LINE="O_I-6300", BMIN=3000, BMAX=200000, VMIN=-25.0, VMAX=35.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_I-6300.png]]
+
++ Strangely, [O I] 6300 does not quite get to the expected velocity in the fainter parts
+  + But is close enough
++ Stranger is that there is a double strand
+
+#+call: bright-sigma-plot(LINE="S_III-6312", BMIN=2500, BMAX=250000, SMIN=30.0, SMAX=90.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-S_III-6312.png]]
+
+#+call: bright-vmean-plot(LINE="S_III-6312", BMIN=2500, BMAX=250000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-S_III-6312.png]]
+
 
 #+call: bright-sigma-plot(LINE="O_I-6364", BMIN=1000, BMAX=70000, SMIN=30.0, SMAX=90.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-O_I-6364.png]]
 
+#+call: bright-vmean-plot(LINE="O_I-6364", BMIN=1000, BMAX=70000, VMIN=-25.0, VMAX=35.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_I-6364.png]]
+
+
+
+** Near red lines: H alpha [N II], He I, [S II] 
 #+call: bright-sigma-plot(LINE="H_I-6563", BMIN=300000, BMAX=30000000, SMIN=40.0, SMAX=60.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-H_I-6563.png]]
+
+#+call: bright-vmean-plot(LINE="H_I-6563", BMIN=300000, BMAX=30000000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-H_I-6563.png]]
+
 
 #+call: bright-sigma-plot(LINE="N_II-6583", BMIN=60000, BMAX=6000000, SMIN=40.0, SMAX=60.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-N_II-6583.png]]
 
+#+call: bright-vmean-plot(LINE="N_II-6583", BMIN=60000, BMAX=6000000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-N_II-6583.png]]
+
+
 #+call: bright-sigma-plot(LINE="N_II-6548", BMIN=20000, BMAX=2000000, SMIN=40.0, SMAX=60.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-N_II-6548.png]]
 
-#+call: bright-sigma-plot(LINE="He_I-6678", BMIN=5000, BMAX=500000, SMIN=40.0, SMAX=60.0)
+#+call: bright-vmean-plot(LINE="N_II-6548", BMIN=20000, BMAX=2000000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-N_II-6548.png]]
+
+
+#+call: bright-sigma-plot(LINE="He_I-6678", BMIN=3500, BMAX=350000, SMIN=40.0, SMAX=60.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-He_I-6678.png]]
 
-#+call: bright-sigma-plot(LINE="S_II-6716", BMIN=10000, BMAX=300000, SMIN=35.0, SMAX=55.0)
+#+call: bright-vmean-plot(LINE="He_I-6678", BMIN=3500, BMAX=350000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-He_I-6678.png]]
+
+
+#+call: bright-sigma-plot(LINE="S_II-6716", BMIN=10000, BMAX=500000, SMIN=35.0, SMAX=55.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-S_II-6716.png]]
 
-#+call: bright-sigma-plot(LINE="S_II-6731", BMIN=15000, BMAX=450000, SMIN=35.0, SMAX=55.0)
+#+call: bright-vmean-plot(LINE="S_II-6716", BMIN=10000, BMAX=500000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-S_II-6716.png]]
+
+#+call: bright-sigma-plot(LINE="S_II-6731", BMIN=10000, BMAX=500000, SMIN=35.0, SMAX=55.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-S_II-6731.png]]
 
+#+call: bright-vmean-plot(LINE="S_II-6731", BMIN=10000, BMAX=500000, VMIN=5.0, VMAX=30.0)
 
-#+call: bright-sigma-plot(LINE="O_I-7002", BMIN=1000, BMAX=100000, SMIN=0.0, SMAX=150.0)
+#+RESULTS:
+[[file:hist-bright-vmean-S_II-6731.png]]
+
+
+** The 7000 \to 8000 \AA range: O I, [Ar III], He I, C II, Ca I
+#+call: bright-sigma-plot(LINE="O_I-7002", BMIN=100, BMAX=20000, SMIN=0.0, SMAX=150.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-O_I-7002.png]]
 
-#+call: bright-sigma-plot(LINE="Ar_III-7136", BMIN=15000, BMAX=1500000, SMIN=35.0, SMAX=55.0)
+#+call: bright-vmean-plot(LINE="O_I-7002", BMIN=100, BMAX=20000, VMIN=-25.0, VMAX=45.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_I-7002.png]]
+
+#+call: bright-sigma-plot(LINE="Ar_III-7136", BMIN=10000, BMAX=2000000, SMIN=35.0, SMAX=55.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-Ar_III-7136.png]]
+
+#+call: bright-vmean-plot(LINE="Ar_III-7136", BMIN=10000, BMAX=2000000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-Ar_III-7136.png]]
+
 
 #+call: bright-sigma-plot(LINE="Ar_III-7751", BMIN=4000, BMAX=400000, SMIN=35.0, SMAX=55.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-Ar_III-7751.png]]
 
-#+call: bright-sigma-plot(LINE="He_I-7065", BMIN=7000, BMAX=700000, SMIN=35.0, SMAX=55.0)
+#+call: bright-vmean-plot(LINE="Ar_III-7751", BMIN=4000, BMAX=400000, VMIN=-25.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-Ar_III-7751.png]]
+
+
+#+call: bright-sigma-plot(LINE="He_I-7065", BMIN=5000, BMAX=1000000, SMIN=35.0, SMAX=55.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-He_I-7065.png]]
+
+#+call: bright-vmean-plot(LINE="He_I-7065", BMIN=5000, BMAX=1000000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-He_I-7065.png]]
+
 
 #+call: bright-sigma-plot(LINE="C_II-7231", BMIN=500, BMAX=30000, SMIN=0.0, SMAX=150.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-C_II-7231.png]]
 
+#+call: bright-vmean-plot(LINE="C_II-7231", BMIN=300, BMAX=30000, VMIN=20.0, VMAX=90.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-C_II-7231.png]]
+
 #+call: bright-sigma-plot(LINE="C_II-7236", BMIN=500, BMAX=30000, SMIN=0.0, SMAX=150.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-C_II-7236.png]]
+
+#+call: bright-vmean-plot(LINE="C_II-7236", BMIN=300, BMAX=30000, VMIN=-40.0, VMAX=100.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-C_II-7236.png]]
+
++ Very strange behaviour of these two lines: they must have various components
++ But at high intensities they tend to V = -20, or V = +75 respectively
 
 #+call: bright-sigma-plot(LINE="He_I-7281", BMIN=1000, BMAX=100000, SMIN=35.0, SMAX=55.0)
 
@@ -1305,12 +1492,29 @@ Refinements to graph:
 #+RESULTS:
 [[file:hist-bright-sigma-Ca_I-7890.png]]
 
+
+#+call: bright-vmean-plot(LINE="O_II-7318", BMIN=5000, BMAX=1000000, VMIN=35.0, VMAX=90.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_II-7318.png]]
+
+#+call: bright-vmean-plot(LINE="O_II-7330", BMIN=5000, BMAX=1000000, VMIN=25.0, VMAX=50.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_II-7330.png]]
+
+
 *** H I lines in the red
 
 #+call: bright-sigma-plot(LINE="H_I-8438", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-H_I-8438.png]]
+
+#+call: bright-vmean-plot(LINE="H_I-8438", BMIN=1000, BMAX=100000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-H_I-8438.png]]
 
 #+call: bright-sigma-plot(LINE="H_I-8467", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
 
@@ -1322,10 +1526,20 @@ Refinements to graph:
 #+RESULTS:
 [[file:hist-bright-sigma-H_I-8502.png]]
 
+#+call: bright-vmean-plot(LINE="H_I-8502", BMIN=1500, BMAX=150000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-H_I-8502.png]]
+
 #+call: bright-sigma-plot(LINE="H_I-8545", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-H_I-8545.png]]
+
+#+call: bright-vmean-plot(LINE="H_I-8545", BMIN=2000, BMAX=200000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-H_I-8545.png]]
 
 #+call: bright-sigma-plot(LINE="H_I-8598", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
 
@@ -1337,6 +1551,15 @@ Refinements to graph:
 #+RESULTS:
 [[file:hist-bright-sigma-H_I-8665.png]]
 
+#+call: bright-vmean-plot(LINE="H_I-8665", BMIN=2000, BMAX=200000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-H_I-8665.png]]
+
++ This seems to have a slight downward tug towards the bluw, which slightly shears the whole pattern
++ That will be due to the O_{2} sky line that overlaps it
+  + Peak intensity of sky line is about 1/60 of H I
+
 #+call: bright-sigma-plot(LINE="H_I-8750", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
 
 #+RESULTS:
@@ -1346,39 +1569,87 @@ Refinements to graph:
   + This is odd because the naive expectation is for the instrumental width to fall  with increasing lambda
   + Furthermore, this ocsurs not at the highest brightness, but at intermediate brightnesses.  But the reason for this seems to be contamination by a high ionization line that puts up the width a bit in the bright central regions
 
+#+call: bright-vmean-plot(LINE="H_I-8750", BMIN=2000, BMAX=200000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-H_I-8750.png]]
+
+
 #+call: bright-sigma-plot(LINE="H_I-8863", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-H_I-8863.png]]
 
+#+call: bright-vmean-plot(LINE="H_I-8863", BMIN=3000, BMAX=300000, VMIN=5.0, VMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-H_I-8863.png]]
+
++ This is clearly pulled to the red by the effect of the sky line at 8867.641
++ The velocity in H I frame is
+  + 3e5 (8867.641 - 8862.79) / 8862.79
+  + = +164 km/s, but then -16 for helio correction, so +148
++ But we only get to about +50, so the H line must dominate over the entire map
 
 #+call: bright-sigma-plot(LINE="H_I-9015", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-H_I-9015.png]]
 
+#+call: bright-vmean-plot(LINE="H_I-9015", BMIN=3000, BMAX=300000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-H_I-9015.png]]
+
 #+call: bright-sigma-plot(LINE="H_I-9229", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-H_I-9229.png]]
 
+#+call: bright-vmean-plot(LINE="H_I-9229", BMIN=4000, BMAX=400000, VMIN=5.0, VMAX=30.0)
 
-*** Blue lines
+#+RESULTS:
+[[file:hist-bright-vmean-H_I-9229.png]]
+
+
+*** Blue lines: [Fe III], He I, H\beta, [O III], [Cl III]
 
 #+call: bright-sigma-plot(LINE="Fe_III-4658", BMIN=1000, BMAX=1000000, SMIN=60.0, SMAX=150.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-Fe_III-4658.png]]
 
+#+call: bright-vmean-plot(LINE="Fe_III-4658", BMIN=500, BMAX=100000, VMIN=-25.0, VMAX=50.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-Fe_III-4658.png]]
+
++ A weak line, evidence of sky component of the same line
+
 #+call: bright-sigma-plot(LINE="He_I-4713", BMIN=1000, BMAX=1000000, SMIN=60.0, SMAX=150.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-He_I-4713.png]]
 
+#+call: bright-vmean-plot(LINE="He_I-4713", BMIN=500, BMAX=50000, VMIN=-25.0, VMAX=50.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-He_I-4713.png]]
+
++ This is reasonably well-behaved (except for being 4 km/s too blue), but it is just too noisy
+
 #+call: bright-sigma-plot(LINE="H_I-4861", BMIN=30000, BMAX=30000000, SMIN=60.0, SMAX=90.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-H_I-4861.png]]
+
+#+call: bright-vmean-plot(LINE="H_I-4861", BMIN=60000, BMAX=6000000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-H_I-4861.png]]
+
++ Definitely shifted by about -4 km/s with respect to H\alpha
++ Also, you can see the effects of reddening, which is greater for the lower brightness parts on the whole
 
 
 #+call: bright-sigma-plot(LINE="He_I-4922", BMIN=1000, BMAX=1000000, SMIN=60.0, SMAX=150.0)
@@ -1386,15 +1657,33 @@ Refinements to graph:
 #+RESULTS:
 [[file:hist-bright-sigma-He_I-4922.png]]
 
+#+call: bright-vmean-plot(LINE="He_I-4922", BMIN=300, BMAX=100000, VMIN=-25.0, VMAX=80.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-He_I-4922.png]]
+
++ Skews to red at low brightness, suggesting contamination with something
+
+
 #+call: bright-sigma-plot(LINE="O_III-4959", BMIN=30000, BMAX=30000000, SMIN=60.0, SMAX=90.0)
 
 #+RESULTS:
-[[file:hist-bright-sigma-O_III-4959.png]]
+[[sfile:hist-bright-sigma-O_III-4959.png]]
+
+#+call: bright-vmean-plot(LINE="O_III-4959", BMIN=40000, BMAX=8000000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_III-4959.png]]
 
 #+call: bright-sigma-plot(LINE="O_III-5007", BMIN=30000, BMAX=30000000, SMIN=60.0, SMAX=90.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-O_III-5007.png]]
+
+#+call: bright-vmean-plot(LINE="O_III-5007", BMIN=120000, BMAX=24000000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_III-5007.png]]
 
 #+call: bright-sigma-plot(LINE="Fe_III-5270", BMIN=1000, BMAX=200000, SMIN=50.0, SMAX=120.0)
 
@@ -1406,20 +1695,128 @@ Refinements to graph:
 #+RESULTS:
 [[file:hist-bright-sigma-Cl_III-5518.png]]
 
+#+call: bright-vmean-plot(LINE="Cl_III-5518", BMIN=1000, BMAX=200000, VMIN=-25.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-Cl_III-5518.png]]
+
 #+call: bright-sigma-plot(LINE="Cl_III-5538", BMIN=1000, BMAX=200000, SMIN=50.0, SMAX=120.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-Cl_III-5538.png]]
+
+#+call: bright-vmean-plot(LINE="Cl_III-5538", BMIN=1000, BMAX=200000, VMIN=-25.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-Cl_III-5538.png]]
 
 #+call: bright-sigma-plot(LINE="N_II-5755", BMIN=1000, BMAX=200000, SMIN=50.0, SMAX=120.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-N_II-5755.png]]
 
+#+call: bright-vmean-plot(LINE="N_II-5755", BMIN=300, BMAX=100000, VMIN=-25.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-N_II-5755.png]]
+
++ This is very strange - it is negative, even at the highest brightness
+
 #+call: bright-sigma-plot(LINE="He_I-5876", BMIN=10000, BMAX=2000000, SMIN=45.0, SMAX=75.0)
 
 #+RESULTS:
 [[file:hist-bright-sigma-He_I-5876.png]]
+
+#+call: bright-vmean-plot(LINE="He_I-5876", BMIN=10000, BMAX=2000000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-He_I-5876.png]]
+
+#+call: bright-vmean-plot(LINE="Si_II-5979", BMIN=200, BMAX=10000, VMIN=-25.0, VMAX=40.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-Si_II-5979.png]]
+
+#+call: bright-vmean-plot(LINE="O_I-6046", BMIN=100, BMAX=20000, VMIN=-35.0, VMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_I-6046.png]]
+
+#+call: bright-vmean-plot(LINE="O_I-7002", BMIN=100, BMAX=20000, VMIN=-35.0, VMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_I-7002.png]]
+
+#+call: bright-vmean-plot(LINE="O_I-7254", BMIN=100, BMAX=20000, VMIN=-35.0, VMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_I-7254.png]]
+
+#+call: bright-vmean-plot(LINE="N_I-7468", BMIN=100, BMAX=20000, VMIN=-35.0, VMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-N_I-7468.png]]
+
+#+call: bright-vmean-plot(LINE="Fe_II-7453", BMIN=50, BMAX=10000, VMIN=-35.0, VMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-Fe_II-7453.png]]
+
+#+call: bright-vmean-plot(LINE="Ca_I-7890", BMIN=600, BMAX=10000, VMIN=-50.0, VMAX=45.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-Ca_I-7890.png]]
+
++ Heading towards its own sky?
+
+#+call: bright-vmean-plot(LINE="Cl_IV-8046", BMIN=50, BMAX=10000, VMIN=-35.0, VMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-Cl_IV-8046.png]]
+
+#+call: bright-vmean-plot(LINE="N_I-8216", BMIN=100, BMAX=20000, VMIN=-60.0, VMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-N_I-8216.png]]
+
+#+call: bright-vmean-plot(LINE="N_I-8223", BMIN=100, BMAX=20000, VMIN=-60.0, VMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-N_I-8223.png]]
+
+#+call: bright-vmean-plot(LINE="N_I-8680", BMIN=100, BMAX=20000, VMIN=-20.0, VMAX=100.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-N_I-8680.png]]
+
+#+call: bright-vmean-plot(LINE="N_I-8686", BMIN=100, BMAX=20000, VMIN=-100.0, VMAX=20.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-N_I-8686.png]]
+
++ These N I lines are all over the place.  The IDs must be wrong
+
+#+call: bright-vmean-plot(LINE="N_I-8703", BMIN=100, BMAX=20000, VMIN=-40.0, VMAX=80.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-N_I-8703.png]]
+
++ That one looks OK
+
+#+call: bright-vmean-plot(LINE="N_I-8712", BMIN=100, BMAX=20000, VMIN=-40.0, VMAX=80.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-N_I-8712.png]]
+
+#+call: bright-vmean-plot(LINE="C_I-8727", BMIN=100, BMAX=20000, VMIN=-40.0, VMAX=80.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-C_I-8727.png]]
+
+#+call: bright-vmean-plot(LINE="He_I-8733", BMIN=100, BMAX=20000, VMIN=-40.0, VMAX=80.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-He_I-8733.png]]
 
 * Making correlations
 :PROPERTIES:
@@ -1887,7 +2284,8 @@ Applications to:
   + But only strong option for comparison is [S III] 9069
   + Which would need correcting for both [S II] /and/ [S IV]
   + But we could also use H I 9015 to interpolate to 9069 position
-  + 
+  + *Turns out* that line is contaminated by [Fe II] 9227
+    + But we should be able to remove that easily enough
 + Then there is the [Ar III] 7137, 7751
   + Which could maybe be compared with H I 8438, etc
   + But it isn't really until we get to H I 8750 that the data quality is any good
