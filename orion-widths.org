@@ -690,7 +690,13 @@ total size is 834,606,720  speedup is 2,086,516.80
   rsync -avP $SRCDIR/{linesum,mean,sigma}-*-[0-9][0-9][0-9][0-9].fits $DESTDIR
 #+END_SRC
 
-
+*** [2017-03-05 Sun] Empty the tmp/musedata folder to save space
++ Move it all back to the external disk (run in terminal)
+#+BEGIN_SRC sh :eval no
+cd ~/tmp/musedata
+mv -fv * /Volumes/SSD-1TB/OrionMuse/LineMaps
+#+END_SRC
++ I had to stop this with 5GB of =sigma-*.fits= files still in the tmp dir since I ran out of space pn the external disk
 
 ** Mow much data do we have?
 + Space used up in data folder
