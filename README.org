@@ -1,1 +1,2252 @@
-orion-widths.org
+#+TITLE: Deriving temperatures from line widths using MUSE spectra
+#+AUTHOR: William Henney
+#+EMAIL: will@henney.org
+
+
+* Plan
+It looks like the sigmas that I measured from MUSE are good enough to find kinematic temperatures.  I want to break this out from the main MUSE project, so that it doesn't get dragged down by the general inertia
+
+** Status and next steps 
+
+*** [2017-10-26 Thu] Reanimation
+
+**** Low-brightness behavior
++ Many lines show a similar behavior at lowest surface brightness
+  + Constant velocity with very low plane-of-sky dispersion
+  + Constant sigma
+  + This seems to be associated with the darkest bits of the Dark Bay
+    + Could be the Reynolds layer/DIG
+    + Or could be scattered light leaking through the veil
+**** Minimum widths versus wavelength
+These are measured by eye from the histogram plots ~hist-bright-sigma-*~
+
+#+name: width-vs-wav
+| Ion      | Class |  Wav | W_hi | W_lo       | B_max | Comment |
+|----------+-------+------+------+------------+-------+---------|
+| [Fe III] |     3 | 4658 |   90 | big hook   |   4.6 |         |
+| He I     |     2 | 4713 |   85 | big hook   |   4.6 |         |
+| H I      |     1 | 4861 |   74 | 70         |   6.6 |         |
+| [O III]  |     3 | 4959 |   70 | 69         |   6.8 |         |
+| [O III]  |     3 | 5007 |   68 | 68         |   7.2 |         |
+| [N II]   |     3 | 5755 |   56 | hook       |   5.0 |         |
+| He I     |     2 | 5876 |   56 | small hook |   6.0 |         |
+| [N II]   |     3 | 6548 |   47 | 47         |   6.0 |         |
+| H I      |     1 | 6563 |   48 | 48         |   7.3 |         |
+| [N II]   |     3 | 6583 | 47.5 | 47         |   6.6 |         |
+| He I     |     2 | 6678 |   47 | hook       |   5.5 |         |
+| [S II]   |     3 | 6716 |   46 | hook       |   5.5 |         |
+| [S II]   |     3 | 6731 |   46 | hook       |   5.7 |         |
+| He I     |     2 | 7065 |   44 | hook       |   5.7 |         |
+| [Ar III] |     3 | 7136 | 42.5 | small hook |   6.1 |         |
+| C II     |     3 | 7231 |  100 | hook       |   4.3 | multi   |
+| C II     |     3 | 7236 |   90 | hook       |   4.2 | multi   |
+| He I     |     2 | 7281 |   43 | big hook   |   4.8 |         |
+| [O II]   |     3 | 7318 |   44 | hook       |   6.0 | multi   |
+| [O II]   |     3 | 7330 |   47 | hook       |   5.9 | multi   |
+| [Ar III] |     3 | 7751 |   39 | hook       |   5.5 |         |
+| H I      |     1 | 8438 |   47 | big hook   |   4.5 |         |
+| O I      |     3 | 8446 |   35 | hook       |   5.2 |         |
+| H I      |     1 | 8502 |   43 | hook       |   4.7 | + blue  |
+| H I      |     1 | 8545 |   39 | big hook   |   4.8 |         |
+| H I      |     1 | 8598 | 38.5 | hook       |   4.9 |         |
+| H I      |     1 | 8665 | 37.5 | hook       |     5 |         |
+| H I      |     1 | 8750 |   37 | hook       |     5 | + blue  |
+| H I      |     1 | 8863 |   38 | hook       |   5.1 |         |
+| H I      |     1 | 9015 | 37.5 | hook       |   5.2 |         |
+| [S III]  |     3 | 9069 |   37 | 37         |   6.7 |         |
+| H I      |     1 | 9229 |   38 | hook       |   5.4 |         |
+
+#+header: :var data=width-vs-wav :colnames no
+#+BEGIN_SRC python :return pltfile :results file
+  import numpy as np
+  from astropy.table import Table
+  from matplotlib import pyplot as plt
+  import seaborn as sns
+
+
+  def curve(wav, index=-1.0):
+      return 53.0*(wav/6000.0)**index
+
+  def plus_thermal(base, T4=1.0, A=1):
+      W = 10.0*np.sqrt(T4/A)
+      return np.sqrt(base**2 + W**2)
+
+  tab = Table(rows=data[1:], names=data[0])
+  pltfile = 'width-vs-wav.pdf'
+  cmap = sns.dark_palette("orange", n_colors=3, reverse=True, as_cmap=True)
+  fig, ax = plt.subplots()
+  wavs = np.linspace(4500.0, 9500.0)
+  instrumental = curve(wavs, -1.3)
+  ax.plot(wavs, instrumental, '--', c='k', alpha=0.4)
+  ax.plot(wavs, plus_thermal(instrumental), '--', c='k', alpha=0.4)
+  ax.scatter(tab['Wav'], tab['W_hi'], s=15*(tab['B_max'] - 4), c=tab['Class'], cmap=cmap)
+  ax.set(
+      ylabel="Line width for brightest pixels",
+      xlabel="Line wavelength, angstrom"
+  )
+  fig.savefig(pltfile)
+#+END_SRC
+
+#+RESULTS:
+[[file:width-vs-wav.pdf]]
+
+
+
+*** [2017-01-02 Mon] Last gasp
++ The project is getting harder and harder
+*** [2016-12-30 Fri] After twelve days - HIATUS
++ This project is stagnating, and it isn't clear that it will ever work
++ I need to get back to more useful things, like the Alba knots
+**** What we have shown
++ Some line pairs have promise for determining the T but in all cases there are serious issues
+  + [O III] - H beta :: This is in the blue, which has the worst instrumental width.  Extrapolating the width from 5007 - 4959 \to 4861 sort of works, but it varies according to whether we do the depatterning or not
+  + [N II] - H alpha :: This is better since instrumental widths are smaller and the two [N II] lines straddle H alpha.  But there is an issue with the C II contribution to 6583 (although I am not 100% sure that is the case, need to theoretically calculate contribution to sigma) and the resultant maps show a lot of structure, which must be due to the changing ionization structure and differences in non-thermal broadening between the [N II] and [O III] zones.
+  + H lines to He lines :: Issue with triplet broadenings for the He I 5875 line, so haven't tried that yet.  H alpha and He I 6678 give a naive T of 16,000 K, which is too high, so we need to take account of instrumental broadening increasing from 6678 to 6563, which is 1.75% change in wavelength.
+  + [Ar III] - He :: This is the best-measured delta variance.  BUT it is 4 times less sensitive as a T indicator because it is the He not H that measures the thermal broadening.  Again, a naive delta variance subtraction gives a T that is too high, but we need to account for the instrumental width increasing from 7136 to 7065 (a change in lambda of 1%)
+*** [2016-12-20 Tue] After third day
+**** Achievements after third day
+1. Removed fixed pattern noise
+   - [[file:~/Dropbox/depattern-maps/][file:~/Dropbox/depattern-maps/]]depattern.org
+2. Performed multibinning of mean and sigma
+   - [[file:~/Dropbox/multibin-maps/multibin.org][file:~/Dropbox/multibin-maps/multibin.org]]
+3. Plotted depatterned, multibinned results
+   - [[id:D0BF70CD-55F8-4BA0-A2B1-8C5BE79642FA][Making correlations]]
+**** Issues after third day
+1. Pattern noise removal still has some problems
+   - Would be better if we masked out stars before doing it
+   - Also, for low s/n data it tends to just make a mess of everything
+2. Issue 1 from [[id:48FD212E-DCA9-4E16-A187-0A8B6467B402][Issues after first day]] is still relevant 
+**** [1/6] What do do now (after third day)?
+:PROPERTIES:
+:ID:       6C8CF009-327B-4B31-B9AC-C67845C88F0A
+:END:
+1. [ ] Instead of var-var, we could try dvar vs var, which would eliminate the slope to first order
+   - This is the only task rolled over from [[id:507E217E-A9A2-4118-ABE2-DED220A2F3EF][What to do now (after first day)?]]
+   - Also we can remove the instrumental width if we can get a good estimate on that
+2. [-] Further work on the \Delta{}v vs \Delta{}v graphs
+   - [X] Include the multibinning
+   - [ ] And have a look at \Delta{}v versus line ratio
+3. [ ] Try and deduce instrumental width as function of wavelength to see if there is any systematic pattern to it
+   - As far as I can see, it monotonically increases towards the blue
+   - [ ] Put lines in groups according to expected intrinsic widths
+     1) Low-ionization metal lines
+     2) high-ionization metal lines
+     3) helium lines
+     4) hydrogen lines
+   - [ ] Use EW to find a "best" region for extracting the lines
+   - Group (1) should have smallest non-istrumental widths, so would in prniciple be best, but there are not many of them
+   - [ ] May need to use more lines than we are doing so far
+     - [ ] Make plot of all the lines
+     - [ ] 
+4. [ ] Try and improve the de-patterning
+5. [ ] Write up the theory of different contributions to variance and derivation of kinetic temperature
+6. [X] Calculate maps of \Delta\sigma^{2} to see what they look like
+*** DONE [2016-12-18 Sun] After first day
+CLOSED: [2016-12-21 Wed 18:51]
+:LOGBOOK:
+- Note taken on [2016-12-21 Wed 18:51] \\
+  All the TODOS from here have been moved forward to [[id:6C8CF009-327B-4B31-B9AC-C67845C88F0A][What do do now (after third day)?]]
+:END:
+**** Achievements after first day
+1. We have all the data we need (not in github repo because of size)
+2. Made variance-variance plots
+   - These are looking promising, but see [[id:48FD212E-DCA9-4E16-A187-0A8B6467B402][Issues]] below
+3. Made mean-mean plots
+   - The absolute velocities seem a bit higgledy-piggledy
+   - Also, they are all on the red side.
+     - Probably because they are lacking the heliocentric correction
+4. Started on delta-delta plots, showing velocity differences between different lines
+   - Once this is tightened up via rebinning, I am hopeful that we will be able to find the mean slope
+**** Issues after first day
+:PROPERTIES:
+:ID:       48FD212E-DCA9-4E16-A187-0A8B6467B402
+:END:
+1. Instrumental variance /might/ vary noticeably even over small wavelength ranges
+   - E.g., 5007 to 4959
+   - This makes it difficult to estimate instrumental width for H beta, since we are extrapolating 5007 --> 4959 ----> 4861
+   - On the other hand, perhaps 4959 has a blend
+2. We expect about \Delta\sigma^{2} \approx 100 for the thermal broadening, and about 150 for the variation in non-thermal broadening 
+   - But we are observing a total spread of
+     - \Delta\sigma^{2} \approx 2000 for [O III] *!!!*
+     - \Delta\sigma^{2} \approx 500 for [N II]
+     - \Delta\sigma^{2} \approx 700 for He I 6678
+     - \Delta\sigma^{2} \approx 500 for He I 5876
+     - \Delta\sigma^{2} \approx 200 for [S III] 9069 (which is finally getting down to the non-thermal broadening)
+   - So it looks like maybe [N II] to H alpha might be the best bet after all
+   - And this means that the pattern noise (or maybe even shot noise) contributes \Delta\sigma^{2} = 400 \to 1600
+     - But much of that is correlated.  For instance if we look at [O III] 4959 vs 5007, then the decorrelated width is only \approx 100 km^{2}/s^{2}
+     - Although that is still large compared with GDH08, where we were getting decorrelated width of 10 to 50 km^{2}/s^{2}
+   - Note that the total instrumental \sigma^{2} varies as
+     - \approx 1400 in IR
+     - \approx 2400 in red
+     - \approx 5000 in blue
+   - So we have \Delta\sigma^{2} / \sigma^{2} in the range 0.15 \to 0.4 from IR to blue
+   - The fractional variations in the instrumental width are 0.5 times that
+     - so less than 10% in the IR and red
+     - but 20% in the blue
+**** What to do now (after first day)?
+:PROPERTIES:
+:ID:       507E217E-A9A2-4118-ABE2-DED220A2F3EF
+:END:
+1. [X] Try and sort out the fixed pattern noise
+   - This is in separate project: [[file:~/Dropbox/depattern-maps/][file:~/Dropbox/depattern-maps/]]
+   - And it seems to work
+2. [X] Spatial binning of maps
+   - Just port over the stuff from [[file:~/Dropbox/OrionMuse/]]
+3. [X] Modify plotting programs to do multiple binning levels
+4. Instead of var-var, we could try dvar vs var, which would eliminate the slope to first order
+* Marshalling the data files and other sundry stuff
+:PROPERTIES:
+:ID:       A2E5E90B-A8C7-49FB-8C12-1A6B6BDD6029
+:END:
+** Table of line wavelengths from OrionMuse project
+#+BEGIN_SRC sh :results verbatim
+date
+cp -av ../OrionMuse/basic-line-list.tab .
+#+END_SRC
+
+#+RESULTS:
+: Tue Oct 24 21:23:05 CDT 2017
+: ../OrionMuse/basic-line-list.tab -> ./basic-line-list.tab
+** Random python libraries 
+#+BEGIN_SRC sh :results verbatim
+date
+cp -av ../OrionMuse/misc_utils.py .
+#+END_SRC
+
+#+RESULTS:
+: Tue Dec 20 23:12:41 GMT 2016
+: ../OrionMuse/misc_utils.py -> ./misc_utils.py
+
+** MUSE spectra from nil server
+#+BEGIN_SRC sh :results verbatim
+  date
+  rsync -avzPL --info=progress0 nil:/fs/nil/other0/will/orion-muse/LineMaps/spec1d-*-????.tab spec-data
+#+END_SRC
+
+#+RESULTS:
+: Tue Oct 24 22:51:32 CDT 2017
+: receiving incremental file list
+: spec1d-C_II-5342.tab
+: 
+: sent 48 bytes  received 5,174 bytes  3,481.33 bytes/sec
+: total size is 379,119  speedup is 72.60
+
+** MUSE maps from the external disk
++ We want copies of these so we can disconnect the disk and still work
++ We need the mean, sigma, and linesum for all the lines of interest
++ Note that the whole =data/= folder is omitted from the git repo, because it is too large (0.5 GB at the start)
+#+name: line-ids
+| He_I-5876  |
+| He_I-6678  |
+| H_I-4861   |
+| H_I-6563   |
+| H_I-9015   |
+| H_I-9229   |
+| O_III-4959 |
+| O_III-5007 |
+| S_III-9069 |
+| N_II-6548  |
+| N_II-6583  |
+
+#+header: 
+#+BEGIN_SRC shell :results drawer :var LINES=line-ids
+  SRCDIR=~/Dropbox/OrionMuse/LineMaps
+  for line in ${LINES[*]}; do
+      echo $line
+      rsync -avP $SRCDIR/linesum-$line.fits data
+      rsync -avP $SRCDIR/linesum-$line-bin???.fits data
+      rsync -avP $SRCDIR/{mean,sigma}-$line-patfixx*.fits data
+  done
+#+END_SRC
+
+#+RESULTS:
+:RESULTS:
+He_I-5876
+sending incremental file list
+
+sent 69 bytes  received 12 bytes  162.00 bytes/sec
+total size is 10,431,360  speedup is 128,782.22
+sending incremental file list
+linesum-He_I-5876-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  174.91MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-He_I-5876-bin002.fits
+         32,768   0%  132.78kB/s    0:05:31       44,049,600 100%   88.44MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-He_I-5876-bin004.fits
+         32,768   0%   67.23kB/s    0:10:54       44,049,600 100%   58.84MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-He_I-5876-bin008.fits
+         32,768   0%   44.76kB/s    0:16:23       44,049,600 100%   43.94MB/s    0:00:00 (xfr#4, to-chk=5/9)
+linesum-He_I-5876-bin016.fits
+         32,768   0%   33.44kB/s    0:21:56        7,176,192  16%    6.84MB/s    0:00:05       44,049,600 100%   35.07MB/s    0:00:01 (xfr#5, to-chk=4/9)
+linesum-He_I-5876-bin032.fits
+         32,768   0%  160.00kB/s    0:04:35       44,049,600 100%   95.47MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-He_I-5876-bin064.fits
+         32,768   0%   72.56kB/s    0:10:06       44,049,600 100%   62.42MB/s    0:00:00 (xfr#7, to-chk=2/9)
+linesum-He_I-5876-bin128.fits
+         32,768   0%   47.48kB/s    0:15:27       44,049,600 100%   46.01MB/s    0:00:00 (xfr#8, to-chk=1/9)
+linesum-He_I-5876-bin256.fits
+         32,768   0%   35.01kB/s    0:20:57       15,892,480  36%   15.16MB/s    0:00:01       44,049,600 100%   36.47MB/s    0:00:01 (xfr#9, to-chk=0/9)
+
+sent 396,543,750 bytes  received 187 bytes  158,617,574.80 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 392 bytes  received 12 bytes  808.00 bytes/sec
+total size is 834,606,720  speedup is 2,065,858.22
+He_I-6678
+sending incremental file list
+
+sent 69 bytes  received 12 bytes  162.00 bytes/sec
+total size is 10,431,360  speedup is 128,782.22
+sending incremental file list
+linesum-He_I-6678-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  172.75MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-He_I-6678-bin002.fits
+         32,768   0%  131.15kB/s    0:05:35       44,049,600 100%   87.52MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-He_I-6678-bin004.fits
+         32,768   0%   66.39kB/s    0:11:03       44,049,600 100%   58.59MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-He_I-6678-bin008.fits
+         32,768   0%   44.57kB/s    0:16:27       44,049,600 100%   43.90MB/s    0:00:00 (xfr#4, to-chk=5/9)
+linesum-He_I-6678-bin016.fits
+         32,768   0%   33.37kB/s    0:21:59        6,324,224  14%    6.03MB/s    0:00:06       44,049,600 100%   35.15MB/s    0:00:01 (xfr#5, to-chk=4/9)
+linesum-He_I-6678-bin032.fits
+         32,768   0%  162.44kB/s    0:04:30       44,049,600 100%   97.47MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-He_I-6678-bin064.fits
+         32,768   0%   74.07kB/s    0:09:54       44,049,600 100%   62.79MB/s    0:00:00 (xfr#7, to-chk=2/9)
+linesum-He_I-6678-bin128.fits
+         32,768   0%   47.76kB/s    0:15:21       44,049,600 100%   45.96MB/s    0:00:00 (xfr#8, to-chk=1/9)
+linesum-He_I-6678-bin256.fits
+         32,768   0%   34.97kB/s    0:20:58       15,433,728  35%   14.72MB/s    0:00:01       44,049,600 100%   36.43MB/s    0:00:01 (xfr#9, to-chk=0/9)
+
+sent 396,543,746 bytes  received 187 bytes  113,298,266.57 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 392 bytes  received 12 bytes  808.00 bytes/sec
+total size is 834,606,720  speedup is 2,065,858.22
+H_I-4861
+sending incremental file list
+
+sent 68 bytes  received 12 bytes  160.00 bytes/sec
+total size is 10,431,360  speedup is 130,392.00
+sending incremental file list
+linesum-H_I-4861-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  172.75MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-H_I-4861-bin002.fits
+         32,768   0%  131.15kB/s    0:05:35       44,049,600 100%   86.80MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-H_I-4861-bin004.fits
+         32,768   0%   65.98kB/s    0:11:07       44,049,600 100%   58.18MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-H_I-4861-bin008.fits
+         32,768   0%   44.26kB/s    0:16:34       44,049,600 100%   43.71MB/s    0:00:00 (xfr#4, to-chk=5/9)
+linesum-H_I-4861-bin016.fits
+         32,768   0%   33.26kB/s    0:22:03        6,029,312  13%    5.75MB/s    0:00:06       44,049,600 100%   35.15MB/s    0:00:01 (xfr#5, to-chk=4/9)
+linesum-H_I-4861-bin032.fits
+         32,768   0%  162.44kB/s    0:04:30       44,049,600 100%   96.79MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-H_I-4861-bin064.fits
+         32,768   0%   73.56kB/s    0:09:58       44,049,600 100%   62.42MB/s    0:00:00 (xfr#7, to-chk=2/9)
+linesum-H_I-4861-bin128.fits
+         32,768   0%   47.48kB/s    0:15:27       44,049,600 100%   46.16MB/s    0:00:00 (xfr#8, to-chk=1/9)
+linesum-H_I-4861-bin256.fits
+         32,768   0%   35.13kB/s    0:20:53       15,564,800  35%   14.84MB/s    0:00:01       44,049,600 100%   36.47MB/s    0:00:01 (xfr#9, to-chk=0/9)
+
+sent 396,543,745 bytes  received 187 bytes  158,617,572.80 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 390 bytes  received 12 bytes  804.00 bytes/sec
+total size is 834,606,720  speedup is 2,076,136.12
+H_I-6563
+sending incremental file list
+
+sent 68 bytes  received 12 bytes  160.00 bytes/sec
+total size is 10,431,360  speedup is 130,392.00
+sending incremental file list
+linesum-H_I-6563-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  174.18MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-H_I-6563-bin002.fits
+         32,768   0%  132.23kB/s    0:05:32       44,049,600 100%   85.04MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-H_I-6563-bin004.fits
+         32,768   0%   64.52kB/s    0:11:22       44,049,600 100%   56.16MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-H_I-6563-bin008.fits
+         32,768   0%   42.72kB/s    0:17:10       43,810,816  99%   41.78MB/s    0:00:00       44,049,600 100%   42.01MB/s    0:00:01 (xfr#4, to-chk=5/9)
+linesum-H_I-6563-bin016.fits
+         32,768   0%   15.62MB/s    0:00:02       44,049,600 100%  175.04MB/s    0:00:00 (xfr#5, to-chk=4/9)
+linesum-H_I-6563-bin032.fits
+         32,768   0%  132.78kB/s    0:05:31       44,049,600 100%   87.34MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-H_I-6563-bin064.fits
+         32,768   0%   66.39kB/s    0:11:03       44,049,600 100%   58.26MB/s    0:00:00 (xfr#7, to-chk=2/9)
+linesum-H_I-6563-bin128.fits
+         32,768   0%   44.32kB/s    0:16:33       44,049,600 100%   43.67MB/s    0:00:00 (xfr#8, to-chk=1/9)
+linesum-H_I-6563-bin256.fits
+         32,768   0%   33.23kB/s    0:22:04        5,963,776  13%    5.69MB/s    0:00:06       44,049,600 100%   34.92MB/s    0:00:01 (xfr#9, to-chk=0/9)
+
+sent 396,543,745 bytes  received 187 bytes  158,617,572.80 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 390 bytes  received 12 bytes  804.00 bytes/sec
+total size is 834,606,720  speedup is 2,076,136.12
+H_I-9015
+sending incremental file list
+
+sent 68 bytes  received 12 bytes  160.00 bytes/sec
+total size is 10,431,360  speedup is 130,392.00
+sending incremental file list
+linesum-H_I-9015-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  174.18MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-H_I-9015-bin002.fits
+         32,768   0%  132.23kB/s    0:05:32       44,049,600 100%   87.88MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-H_I-9015-bin004.fits
+         32,768   0%   66.81kB/s    0:10:58       44,049,600 100%   58.67MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-H_I-9015-bin008.fits
+         32,768   0%   44.57kB/s    0:16:27       44,049,600 100%   44.08MB/s    0:00:00 (xfr#4, to-chk=5/9)
+linesum-H_I-9015-bin016.fits
+         32,768   0%   33.54kB/s    0:21:52        7,962,624  18%    7.59MB/s    0:00:04       44,049,600 100%   35.21MB/s    0:00:01 (xfr#5, to-chk=4/9)
+linesum-H_I-9015-bin032.fits
+         32,768   0%  164.10kB/s    0:04:28       44,049,600 100%   96.57MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-H_I-9015-bin064.fits
+         32,768   0%   73.39kB/s    0:09:59       44,049,600 100%   62.70MB/s    0:00:00 (xfr#7, to-chk=2/9)
+linesum-H_I-9015-bin128.fits
+         32,768   0%   47.69kB/s    0:15:22       44,049,600 100%   46.42MB/s    0:00:00 (xfr#8, to-chk=1/9)
+linesum-H_I-9015-bin256.fits
+         32,768   0%   35.32kB/s    0:20:46       17,268,736  39%   16.47MB/s    0:00:01       44,049,600 100%   36.98MB/s    0:00:01 (xfr#9, to-chk=0/9)
+
+sent 396,543,745 bytes  received 187 bytes  158,617,572.80 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 390 bytes  received 12 bytes  804.00 bytes/sec
+total size is 834,606,720  speedup is 2,076,136.12
+H_I-9229
+sending incremental file list
+
+sent 68 bytes  received 12 bytes  160.00 bytes/sec
+total size is 10,431,360  speedup is 130,392.00
+sending incremental file list
+linesum-H_I-9229-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  182.51MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-H_I-9229-bin002.fits
+         32,768   0%  138.53kB/s    0:05:17       44,049,600 100%   88.44MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-H_I-9229-bin004.fits
+         32,768   0%   67.23kB/s    0:10:54       44,049,600 100%   57.86MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-H_I-9229-bin008.fits
+         32,768   0%   44.02kB/s    0:16:40       44,049,600 100%   43.04MB/s    0:00:00 (xfr#4, to-chk=5/9)
+linesum-H_I-9229-bin016.fits
+         32,768   0%   32.75kB/s    0:22:23        2,981,888   6%    2.84MB/s    0:00:14       44,049,600 100%   34.32MB/s    0:00:01 (xfr#5, to-chk=4/9)
+linesum-H_I-9229-bin032.fits
+         32,768   0%  140.97kB/s    0:05:12       44,049,600 100%   87.16MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-H_I-9229-bin064.fits
+         32,768   0%   66.25kB/s    0:11:04       44,049,600 100%   57.47MB/s    0:00:00 (xfr#7, to-chk=2/9)
+linesum-H_I-9229-bin128.fits
+         32,768   0%   43.72kB/s    0:16:46       44,049,600 100%   42.74MB/s    0:00:00 (xfr#8, to-chk=1/9)
+linesum-H_I-9229-bin256.fits
+         32,768   0%   32.52kB/s    0:22:33        1,867,776   4%    1.78MB/s    0:00:23       44,049,600 100%   34.07MB/s    0:00:01 (xfr#9, to-chk=0/9)
+
+sent 396,543,749 bytes  received 187 bytes  158,617,574.40 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 390 bytes  received 12 bytes  804.00 bytes/sec
+total size is 834,606,720  speedup is 2,076,136.12
+O_III-4959
+sending incremental file list
+
+sent 70 bytes  received 12 bytes  164.00 bytes/sec
+total size is 10,431,360  speedup is 127,211.71
+sending incremental file list
+linesum-O_III-4959-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  165.27MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-O_III-4959-bin002.fits
+         32,768   0%  125.49kB/s    0:05:50       44,049,600 100%   82.86MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-O_III-4959-bin004.fits
+         32,768   0%   62.99kB/s    0:11:38       44,049,600 100%   55.20MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-O_III-4959-bin008.fits
+         32,768   0%   41.99kB/s    0:17:28       42,303,488  96%   40.34MB/s    0:00:00       44,049,600 100%   41.68MB/s    0:00:01 (xfr#4, to-chk=5/9)
+linesum-O_III-4959-bin016.fits
+         32,768   0%    3.12MB/s    0:00:13       44,049,600 100%  161.57MB/s    0:00:00 (xfr#5, to-chk=4/9)
+linesum-O_III-4959-bin032.fits
+         32,768   0%  122.61kB/s    0:05:59       44,049,600 100%   82.37MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-O_III-4959-bin064.fits
+         32,768   0%   62.62kB/s    0:11:42       44,049,600 100%   55.06MB/s    0:00:00 (xfr#7, to-chk=2/9)
+linesum-O_III-4959-bin128.fits
+         32,768   0%   41.88kB/s    0:17:30       41,549,824  94%   39.62MB/s    0:00:00       44,049,600 100%   41.51MB/s    0:00:01 (xfr#8, to-chk=1/9)
+linesum-O_III-4959-bin256.fits
+         32,768   0%    2.23MB/s    0:00:19       44,049,600 100%  150.03MB/s    0:00:00 (xfr#9, to-chk=0/9)
+
+sent 396,543,747 bytes  received 187 bytes  158,617,573.60 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 398 bytes  received 12 bytes  820.00 bytes/sec
+total size is 834,606,720  speedup is 2,035,626.15
+O_III-5007
+sending incremental file list
+
+sent 70 bytes  received 12 bytes  164.00 bytes/sec
+total size is 10,431,360  speedup is 127,211.71
+sending incremental file list
+linesum-O_III-5007-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  167.91MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-O_III-5007-bin002.fits
+         32,768   0%  127.49kB/s    0:05:45       44,049,600 100%   83.68MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-O_III-5007-bin004.fits
+         32,768   0%   63.62kB/s    0:11:31       44,049,600 100%   55.71MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-O_III-5007-bin008.fits
+         32,768   0%   42.38kB/s    0:17:18       44,049,600 100%   42.09MB/s    0:00:00 (xfr#4, to-chk=5/9)
+linesum-O_III-5007-bin016.fits
+         32,768   0%   32.03kB/s    0:22:54           98,304   0%   95.81kB/s    0:07:38       44,049,600 100%   33.99MB/s    0:00:01 (xfr#5, to-chk=4/9)
+linesum-O_III-5007-bin032.fits
+         32,768   0%  136.17kB/s    0:05:23       44,049,600 100%   89.00MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-O_III-5007-bin064.fits
+         32,768   0%   67.65kB/s    0:10:50       44,049,600 100%   59.42MB/s    0:00:00 (xfr#7, to-chk=2/9)
+linesum-O_III-5007-bin128.fits
+         32,768   0%   45.20kB/s    0:16:13       44,049,600 100%   44.22MB/s    0:00:00 (xfr#8, to-chk=1/9)
+linesum-O_III-5007-bin256.fits
+         32,768   0%   33.65kB/s    0:21:48        8,126,464  18%    7.75MB/s    0:00:04       44,049,600 100%   34.52MB/s    0:00:01 (xfr#9, to-chk=0/9)
+
+sent 396,543,751 bytes  received 187 bytes  158,617,575.20 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 394 bytes  received 12 bytes  812.00 bytes/sec
+total size is 834,606,720  speedup is 2,055,681.58
+S_III-9069
+sending incremental file list
+
+sent 70 bytes  received 12 bytes  164.00 bytes/sec
+total size is 10,431,360  speedup is 127,211.71
+sending incremental file list
+linesum-S_III-9069-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  148.33MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-S_III-9069-bin002.fits
+         32,768   0%  112.68kB/s    0:06:30       44,049,600 100%   73.31MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-S_III-9069-bin004.fits
+         32,768   0%   55.75kB/s    0:13:09       44,049,600 100%   48.73MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-S_III-9069-bin008.fits
+         32,768   0%   37.08kB/s    0:19:47       20,807,680  47%   19.84MB/s    0:00:01       44,049,600 100%   36.56MB/s    0:00:01 (xfr#4, to-chk=5/9)
+linesum-S_III-9069-bin016.fits
+         32,768   0%  211.92kB/s    0:03:27       44,049,600 100%   94.83MB/s    0:00:00 (xfr#5, to-chk=4/9)
+linesum-S_III-9069-bin032.fits
+         32,768   0%   72.07kB/s    0:10:10       44,049,600 100%   56.31MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-S_III-9069-bin064.fits
+         32,768   0%   42.84kB/s    0:17:07       37,584,896  85%   35.84MB/s    <0:00:00       44,049,600 100%   40.39MB/s    0:00:01 (xfr#7, to-chk=2/9)
+linesum-S_III-9069-bin128.fits
+         32,768   0%  761.90kB/s    0:00:57       44,049,600 100%  123.19MB/s    0:00:00 (xfr#8, to-chk=1/9)
+linesum-S_III-9069-bin256.fits
+         32,768   0%   93.57kB/s    0:07:50       44,049,600 100%   64.73MB/s    0:00:00 (xfr#9, to-chk=0/9)
+
+sent 396,543,747 bytes  received 187 bytes  113,298,266.86 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 394 bytes  received 12 bytes  812.00 bytes/sec
+total size is 834,606,720  speedup is 2,055,681.58
+N_II-6548
+sending incremental file list
+
+sent 69 bytes  received 12 bytes  162.00 bytes/sec
+total size is 10,431,360  speedup is 128,782.22
+sending incremental file list
+linesum-N_II-6548-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  139.46MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-N_II-6548-bin002.fits
+         32,768   0%  105.96kB/s    0:06:55       44,049,600 100%   69.44MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-N_II-6548-bin004.fits
+         32,768   0%   52.81kB/s    0:13:53       44,049,600 100%   45.96MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-N_II-6548-bin008.fits
+         32,768   0%   34.97kB/s    0:20:58       12,124,160  27%   11.56MB/s    0:00:02       44,049,600 100%   34.60MB/s    0:00:01 (xfr#4, to-chk=5/9)
+linesum-N_II-6548-bin016.fits
+         32,768   0%  148.15kB/s    0:04:57       44,049,600 100%   81.26MB/s    0:00:00 (xfr#5, to-chk=4/9)
+linesum-N_II-6548-bin032.fits
+         32,768   0%   61.78kB/s    0:11:52       44,049,600 100%   51.11MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-N_II-6548-bin064.fits
+         32,768   0%   38.88kB/s    0:18:52       25,395,200  57%   24.22MB/s    0:00:00       44,049,600 100%   37.41MB/s    0:00:01 (xfr#7, to-chk=2/9)
+linesum-N_II-6548-bin128.fits
+         32,768   0%  256.00kB/s    0:02:51       44,049,600 100%  101.96MB/s    0:00:00 (xfr#8, to-chk=1/9)
+linesum-N_II-6548-bin256.fits
+         32,768   0%   77.48kB/s    0:09:28       44,049,600 100%   60.53MB/s    0:00:00 (xfr#9, to-chk=0/9)
+
+sent 396,543,746 bytes  received 187 bytes  113,298,266.57 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 396 bytes  received 12 bytes  816.00 bytes/sec
+total size is 834,606,720  speedup is 2,045,604.71
+N_II-6583
+sending incremental file list
+
+sent 69 bytes  received 12 bytes  162.00 bytes/sec
+total size is 10,431,360  speedup is 128,782.22
+sending incremental file list
+linesum-N_II-6583-bin001.fits
+         32,768   0%    0.00kB/s    0:00:00       44,049,600 100%  151.00MB/s    0:00:00 (xfr#1, to-chk=8/9)
+linesum-N_II-6583-bin002.fits
+         32,768   0%  114.70kB/s    0:06:23       44,049,600 100%   75.69MB/s    0:00:00 (xfr#2, to-chk=7/9)
+linesum-N_II-6583-bin004.fits
+         32,768   0%   57.55kB/s    0:12:44       44,049,600 100%   51.54MB/s    0:00:00 (xfr#3, to-chk=6/9)
+linesum-N_II-6583-bin008.fits
+         32,768   0%   39.22kB/s    0:18:42       30,081,024  68%   28.69MB/s    0:00:00       44,049,600 100%   38.75MB/s    0:00:01 (xfr#4, to-chk=5/9)
+linesum-N_II-6583-bin016.fits
+         32,768   0%  372.09kB/s    0:01:58       44,049,600 100%  119.34MB/s    0:00:00 (xfr#5, to-chk=4/9)
+linesum-N_II-6583-bin032.fits
+         32,768   0%   90.65kB/s    0:08:05       44,049,600 100%   67.54MB/s    0:00:00 (xfr#6, to-chk=3/9)
+linesum-N_II-6583-bin064.fits
+         32,768   0%   51.36kB/s    0:14:16       44,049,600 100%   48.45MB/s    0:00:00 (xfr#7, to-chk=2/9)
+linesum-N_II-6583-bin128.fits
+         32,768   0%   36.87kB/s    0:19:53       15,826,944  35%   15.09MB/s    0:00:01       44,049,600 100%   36.18MB/s    0:00:01 (xfr#8, to-chk=1/9)
+linesum-N_II-6583-bin256.fits
+         32,768   0%  196.32kB/s    0:03:44       44,049,600 100%   92.94MB/s    0:00:00 (xfr#9, to-chk=0/9)
+
+sent 396,543,746 bytes  received 187 bytes  158,617,573.20 bytes/sec
+total size is 396,446,400  speedup is 1.00
+sending incremental file list
+
+sent 388 bytes  received 12 bytes  800.00 bytes/sec
+total size is 834,606,720  speedup is 2,086,516.80
+:END:
+
+** Even more MUSE maps from the external disk
++ This time, we are going to get all the lines - we have hundreds of GB free, so why not?
+  + The files are in a new folder =~/tmp/musedata/= so that it isn't in Dropbox or git
+
+#+BEGIN_SRC shell :eval no :tangle sync-all-maps-to-internal-disk.sh
+  SRCDIR=~/Dropbox/OrionMuse/LineMaps
+  DESTDIR=~/tmp/musedata
+  rsync -avP $SRCDIR/{linesum,mean,sigma}-*-[0-9][0-9][0-9][0-9].fits $DESTDIR
+#+END_SRC
+
+*** [2017-03-05 Sun] Empty the tmp/musedata folder to save space
++ Move it all back to the external disk (run in terminal)
+#+BEGIN_SRC sh :eval no
+cd ~/tmp/musedata
+mv -fv * /Volumes/SSD-1TB/OrionMuse/LineMaps
+#+END_SRC
++ I had to stop this with 5GB of =sigma-*.fits= files still in the tmp dir since I ran out of space pn the external disk
+
+*** [2017-10-26 Thu] Use a symbolic link so the programs will still work
+This requires the external disk to be connected
+#+BEGIN_SRC sh :eval no
+mv ~/tmp/musedata ~/tmp/musedata-original
+ln -sf /Volumes/SSD-1TB/OrionMuse/LineMaps ~/tmp/musedata
+#+END_SRC
+
+
+** Mow much data do we have?
++ Space used up in data folder
+#+BEGIN_SRC bash :results verbatim append
+date
+du -sh data
+#+END_SRC
+
+#+RESULTS:
+: Tue Dec 20 11:07:47 GMT 2016
+:  13G	data
+
++ Space remaining on disk
+#+BEGIN_SRC bash :results verbatim append
+date
+df -h 
+#+END_SRC
+
+#+RESULTS:
+: Tue Dec 20 17:25:45 GMT 2016
+: Filesystem      Size   Used  Avail Capacity iused      ifree %iused  Mounted on
+: /dev/disk1     931Gi  737Gi  194Gi    80% 4332485 4290634794    0%   /
+: devfs          186Ki  186Ki    0Bi   100%     642          0  100%   /dev
+: map -hosts       0Bi    0Bi    0Bi   100%       0          0  100%   /net
+: map auto_home    0Bi    0Bi    0Bi   100%       0          0  100%   /home
+: /dev/disk2s2   931Gi  743Gi  188Gi    80%  202673 4294764606    0%   /Volumes/SSD-1TB
+
+
+* TODO Question of blends
++ Which lines may be affected by blends
++ [N II] 6583.45 is close to C II 6578.05
+  + Separated by 5 \AA
+
+* TODO Heliocentric correction and absolute mean velocity values
++ [2016-12-20 Tue] So it turns out the main problem with the heliocentric velocities is that the MUSE datacube is already in the barycentric frame (which is only 0.01 km/s different from the heliocentric frame)
+  + Whereas I was applying the heliocentric correction as if the wavelengths were in the topocentric frame!  /Silly me!/
++ Turns out that I already printed out the value of the heliocentric correction at the end of the OrionMuse heading [[id:9B385AF1-5AA5-4EA2-B1A3-8802C0959808][Program to extract a single line extract-em-line.py]]
+  + The value was *-16.217273731*
+  + So we need to add that back to all our velocities!
++ [ ] [2016-12-26 Mon 00:51] I have now fixed this at the source, so I need to undo the fix to the fix!
+** Corrections to the absolute velocities
++ Fig 4 of Weilbacher shows all their mean velocities
++ They are mixing high-ionization and low-ionization lines, so some of the spread is due to that
++ But you can see the fall off to negative values for \lambda < 5100 \AA
+
+
+* TODO How to deal with the pattern noise
++ This should be removed before the binning
++ I have tried to do this before
+  + See the =-patfix= files in the =LineMaps= folder
+  + Was done by [[file:~/Dropbox/OrionMuse/de-pattern-noise.py]]
+  + Described in [[id:7E273615-5455-41BA-8606-458A9A2E35DF][Dealing with the pattern noise in the velocity maps]]
+  + This worked with chunks of 290x290 pixels and found the average x profile and y profile pattern, averaged over all the chunks
+    + I am cleaning that up now, since it looks like it works pretty well
++ [X] It may be a good idea to combine this real-space approach by some sort of retouching in Fourier space
+  + No, not necessary
++ Now have working version, which is housed in its own repo
+  + [[file:~/Dropbox/depattern-maps/][file:~/Dropbox/depattern-maps/]]
++ [ ] Need to fix a few issues with the "extreme" method, which is what works best for the sigma maps
+  1. Use a per-line mask based on an EW threshold
+  2. Maybe don't apply when the maps are too noisy
+
+* DONE Spatial binning of maps
+CLOSED: [2016-12-20 Tue 16:34]
++ Hopefully tighten up all the correlations
++ Yep, that worked really well
++ It is done in a different repo
+  + [[file:~/Dropbox/multibin-maps/][file:~/Dropbox/multibin-maps/]]
++ And files are copied over with script in [[id:A2E5E90B-A8C7-49FB-8C12-1A6B6BDD6029][Marshalling the image files]]
+
+* TODO Image plots
++ Show the effects of the pattern removal and binning
++ Show the high-velocity jets
+
+
+* TODO Differences of variance
+Make FITS maps of  (\sigma^{2} - \sigma^{2}), which is the fundamental quantity proportional to the temperature
+
+#+name: delta-variance
+#+header: :var LINE_A="He_I-7065" LINE_B="Ar_III-7136"
+#+header: :var D="~/tmp/musedata" N=4 X=""
+#+header: :var FMT="sigma-{0}{2}-bin{1:03d}.fits"
+#+header: :var OUTFMT="delta-var-{0}-{1}{3}-bin{2:03d}.fits"
+#+BEGIN_SRC python :return fnC :results verbatim
+  import os
+  import numpy as np
+  from astropy.io import fits
+
+  dd = os.path.expanduser(D)
+
+  fnA = os.path.join(dd, FMT.format(LINE_A, N, X))
+  fnB = os.path.join(dd, FMT.format(LINE_B, N, X))
+
+  hduA = fits.open(fnA)['SCALED']
+  hduB = fits.open(fnB)['SCALED']
+
+  fnC = os.path.join(dd, OUTFMT.format(LINE_A, LINE_B, N, X))
+
+  fits.PrimaryHDU(
+      header=hduA.header,
+      data=hduA.data**2 - hduB.data**2
+  ).writeto(fnC, clobber=True)
+#+END_SRC
+
+#+RESULTS: delta-variance
+: /Users/will/tmp/musedata/delta-var-He_I-7065-Ar_III-7136-bin004.fits
+
+#+call: delta-variance(N=64)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-He_I-7065-Ar_III-7136-bin064.fits
+
+#+call: delta-variance(N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-He_I-7065-Ar_III-7136-bin016.fits
+
+
+** Delta variance [N II] 6583 and 6548
+#+call: delta-variance(LINE_A="N_II-6548", LINE_B="N_II-6583", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-N_II-6548-N_II-6583-bin016.fits
+
++ There is a lot of structure in this map, which seems to reflect the C II 6578.05  contribution to the N II line
++ The \Delta\sigma^{2} varies from -200 to -50
++ We should plot \Delta\sigma^{2} against C II 7236 / [N II]
+  + And extrapolate to zero - in principle, it should be linear
+** Delta variance H alpha and [N II] 6548, or 6583
+#+call: delta-variance(LINE_A="H_I-6563", LINE_B="N_II-6548", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-H_I-6563-N_II-6548-bin016.fits
+
+#+call: delta-variance(LINE_A="H_I-6563", LINE_B="N_II-6583", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-H_I-6563-N_II-6583-bin016.fits
+** Delta variance of [O III] 4959 and 5007
+#+call: delta-variance(LINE_A="O_III-4959", LINE_B="O_III-5007", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-O_III-4959-O_III-5007-bin016.fits
+
+
+** Delta variance H beta and [O III] 4959, or 5007
+
+#+call: delta-variance(LINE_A="H_I-4861", LINE_B="O_III-5007", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-H_I-4861-O_III-5007-bin016.fits
+
+#+call: delta-variance(LINE_A="H_I-4861", LINE_B="O_III-4959", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-H_I-4861-O_III-4959-bin016.fits
+
+
+** Delta variance H alpha and He I 6678
+#+call: delta-variance(LINE_A="H_I-6563", LINE_B="He_I-6678", N=64)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-H_I-6563-He_I-6678-bin064.fits
+
++ Looks OK, but a bit high
+  + Average value is about 180 in raw one
+  + Patfixx version has much worse artefacts, so we need to deal with that
+    + And average value is lower: about 100
+  + Remove the FS variance of 10.233
+  + T4 multiplier is 82.5 (1 - 1/4) = 61.875 => T4 = 1.6, which is too high
+  + But we still need to look at varation in instrumental width between 6563 and 6678 
+
+#+call: delta-variance(LINE_A="H_I-6563", LINE_B="He_I-6678", D="data", X="-patfixx", N=16)
+
+#+RESULTS:
+: data/delta-var-H_I-6563-He_I-6678-patfixx-bin016.fits
+
+#+call: delta-variance(LINE_A="H_I-6563", LINE_B="He_I-6678", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-H_I-6563-He_I-6678-bin016.fits
+
+
+
+** Delta variance He I 7065.28 and [Ar III] 7135
+#+call: delta-variance(LINE_A="He_I-7065", LINE_B="Ar_III-7136", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-He_I-7065-Ar_III-7136-bin016.fits
+
+** Delta variance H I 9015 and [S III] 9069
+#+call: delta-variance(LINE_A="H_I-9015", LINE_B="S_III-9069", N=64)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-H_I-9015-S_III-9069-bin064.fits
+
+And the other lines to be sure
+#+call: delta-variance(LINE_A="H_I-9229", LINE_B="S_III-9069", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-H_I-9229-S_III-9069-bin016.fits
+
+#+call: delta-variance(LINE_A="H_I-8863", LINE_B="S_III-9069", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-H_I-8863-S_III-9069-bin016.fits
+
+#+call: delta-variance(LINE_A="H_I-8750", LINE_B="S_III-9069", N=16)
+
+#+RESULTS:
+: /Users/will/tmp/musedata/delta-var-H_I-8750-S_III-9069-bin016.fits
+
+
+For this to work, we need to deal with the sky O2 and OH lines, and the N I multiplet
+
+
+* Interpolating [O III] width to H beta wavelength
++ 5006.84 - 4959.91 = 46.93
++ 4959.91 - 4861.32 = 98.59
++ 98.59/46.93 = 2.10079
++ So we can take Var([O III] @ 4861) to be either of 
+  + Var(4959) - 2.10079 [Var(4959) - Var(5007)]
+  + Var(5007) - 3.10079 [Var(4959) - Var(5007)]
++ And we calculate Var(4861) - Var([O III] @ 4861)
+
+#+name: extrapolated-delta-variance
+#+header: :var LINE_A="H_I-4861" 
+#+header: :var LINE_B1="O_III-4959" LINE_B2="O_III-5007"
+#+header: :var FACTOR=2.10079
+#+header: :var D="~/tmp/musedata" N=64 X="" 
+#+header: :var FMT="sigma-{0}{2}-bin{1:03d}.fits"
+#+header: :var OUTFMT="delta-var-{0}-{1}{3}-bin{2:03d}.fits"
+#+BEGIN_SRC python :return fnC :results verbatim
+  import os
+  import numpy as np
+  from astropy.io import fits
+
+  ionA, wavA = LINE_A.split('-')
+  ionB, wav1 = LINE_B1.split('-')
+  _, wav2 = LINE_B2.split('-')
+  assert _ == ionB, 'Ions B1, B2 must be the same: {}, {}'.format(ionB, _)
+
+  dd = os.path.expanduser(D)
+
+  fnA = os.path.join(dd, FMT.format(LINE_A, N, X))
+  fnB1 = os.path.join(dd, FMT.format(LINE_B1, N, X))
+  fnB2 = os.path.join(dd, FMT.format(LINE_B2, N, X))
+
+  hduA = fits.open(fnA)['SCALED']
+  hduB1 = fits.open(fnB1)['SCALED']
+  hduB2 = fits.open(fnB2)['SCALED']
+
+  extrapolated_variance = hduB1.data**2 + FACTOR*(hduB1.data**2 - hduB2.data**2)
+
+  line_b = '{}-at-{}'.format(ionB, wavA)
+  fnC = os.path.join(dd, OUTFMT.format(LINE_A, line_b, N, X))
+
+  fits.PrimaryHDU(
+      header=hduA.header,
+      data=hduA.data**2 - extrapolated_variance
+  ).writeto(fnC, clobber=True)
+#+END_SRC
+
+#+RESULTS: extrapolated-delta-variance
+: /Users/will/tmp/musedata/delta-var-H_I-4861-O_III-at-4861-bin064.fits
+
++ This is reasonable, but the final map could do with more tweaking.
++ The variation in 4959 - 5007 within the patches looks reasonable
++ But it goes funny in the fainter parts to the east
+  + So maybe take average within patch, like we did with the patfic stuffZ 
++ Now try the same, but with the patfixx versions
+
+#+call: extrapolated-delta-variance(D="data", X="-patfixx")
+
+#+RESULTS:
+: data/delta-var-H_I-4861-O_III-at-4861-patfixx-bin064.fits
+
+* Spectral plots of "lines of interest"
++ Plots of the 1-D spectra that we have copied to the =spec-data/= folder
+
+#+name: rest-wavs
+| H_I-4861   | 4861.32 |
+| O_III-4959 | 4958.91 |
+| O_III-5007 | 5006.84 |
+| He_I-5876  | 5875.62 |
+| N_II-6548  | 6548.05 |
+| H_I-6563   | 6562.79 |
+| N_II-6583  | 6583.45 |
+| He_I-6678  | 6678.15 |
+| H_I-9015   | 9014.91 |
+| S_III-9069 | 9068.90 |
+| H_I-9229   | 9229.01 |
+
+#+BEGIN_SRC python :var LINES=rest-wavs :results file :return figfile
+  from astropy.table import Table
+  from matplotlib import pyplot as plt
+  import seaborn as sns
+  import numpy as np
+  from matplotlib.ticker import MultipleLocator, MaxNLocator
+
+  sns.set(style='white')
+  nlines = len(LINES)
+  figfile = 'line-profile-wav-grid.pdf'
+
+  fig, axes = plt.subplots(4, 3, figsize=(10, 8))
+  for [line_id, wav0], ax in zip(LINES, axes.flat[:nlines]):
+      specfile = 'spec-data/spec1d-{}.tab'.format(line_id)
+      tab = Table.read(specfile, format='ascii.tab')
+      label = line_id.split('-')[0].replace('_', ' ') + ' {:.2f}'.format(wav0)
+      ax.plot(tab['wav'], 1e-5*tab['flux'], label=label)
+      ax.axvline(wav0, ls='--', color='k')
+      ax.legend(loc='upper left')
+      ax.set(
+          xlim=[tab['wav'].min(), tab['wav'].max()],
+          ylim=[0, None],
+      )
+      ax.xaxis.set_major_locator(MultipleLocator(5))
+      ax.yaxis.set_major_locator(MaxNLocator(7))
+
+  axes[-1, 0].set(
+      xlabel='Wavelength, Angstrom', ylabel='Flux',
+  )
+  # We don't use the axis in the bottom right corner, so turn everything off
+  axes[-1, -1].set_frame_on(False)
+  axes[-1, -1].xaxis.set_visible(False)
+  axes[-1, -1].yaxis.set_visible(False)
+
+  fig.tight_layout()
+  fig.savefig(figfile)
+#+END_SRC
+
+#+RESULTS:
+[[file:line-profile-wav-grid.pdf]]
+
++ So this plot is not that illuminating really
+
+
+** Mean wavelengths of all the lines
+:PROPERTIES:
+:ID:       1F9D411C-9C16-4F18-AB96-103DC86F80D9
+:END:
+
+#+BEGIN_SRC python :eval no :tangle line-all-wav-grid.py
+  import os
+  import sys
+  from misc_utils import sanitize_string
+  from astropy.table import Table
+  from matplotlib import pyplot as plt
+  import seaborn as sns
+  import numpy as np
+  from matplotlib.ticker import MultipleLocator, MaxNLocator
+
+  sns.set(style='white')
+
+  linetab = Table.read('basic-line-list.tab', format='ascii.tab')
+
+  figfile = 'line-all-wav-grid.pdf'
+
+  fig, axes = plt.subplots(33, 8, figsize=(20, 50))
+  flaxes = axes.flat
+  for row in linetab:
+      wav0 = row['wav0']
+      wavid = str(int(wav0+0.5))
+      species = sanitize_string(row['Ion'])
+      sname = 'spec-data/spec1d-{}-{}.tab'.format(species, wavid)
+      try:
+          tab = Table.read(sname, format='ascii.tab')
+      except FileNotFoundError:
+          print(sname, 'not found', file=sys.stderr)
+          continue
+      label = '{} {:.2f}'.format(row['Ion'], wav0)
+      netflux = (tab['flux'] - tab['cont'])/tab['cont']
+      mask4 = np.abs(tab['wav'] - wav0) < 4.0
+      mask2 = np.abs(tab['wav'] - wav0) < 2.0
+      mask_blue = np.abs(tab['wav'] - (wav0 - 6.0)) < 2.0
+      mask_red = np.abs(tab['wav'] - (wav0 + 6.0)) < 2.0
+      margin = 0.2*max(netflux[mask2].max(), -netflux.min())
+      ymin = netflux.min() - margin
+      ymax = max(0.0, netflux[mask2].max()) + 4*margin
+      ax = next(flaxes)
+      ax.plot(tab['wav'], netflux, label=label, c='r')
+      ax.axhline(0.0,  ls='--', c='b')
+      if netflux[mask2].sum() > 0.0:
+          # Emission line
+          fillcolor = 'r'
+      else:
+          # Absorption line
+          fillcolor = 'b'
+      ax.fill_between(tab['wav'], netflux, where=mask4,
+                      color=fillcolor, alpha=0.3)
+      if row['blue cont']:
+          ax.fill_between(tab['wav'], netflux, ymin,
+                          where=mask_blue, color='k', alpha=0.1)
+      if row['red cont']:
+          ax.fill_between(tab['wav'], netflux, ymin,
+                          where=mask_red, color='k', alpha=0.1)
+      ax.axvline(wav0, ls='--', color='k')
+      ax.legend(loc='best', frameon=True, framealpha=0.8)
+      ax.set(
+          xlim=[tab['wav'].min(), tab['wav'].max()],
+          ylim=[ymin, ymax],
+      )
+      ax.xaxis.set_major_locator(MultipleLocator(5))
+      ax.yaxis.set_major_locator(MaxNLocator(7))
+
+  axes[-1, 0].set(
+      xlabel='Wavelength, Angstrom', ylabel='Flux',
+  )
+
+  fig.tight_layout()
+  fig.savefig(figfile)
+  print(figfile, end='')
+#+END_SRC
+
+#+BEGIN_SRC sh :results file
+python line-all-wav-grid.py
+#+END_SRC
+
+#+RESULTS:
+[[file:line-all-wav-grid.pdf]]
+
+
+Refinements to graph:
++ [X] Put box behind line labels so we can see them better
+
+** Extra things to do with the line extraction program
++ This is going to be done in the main OrionMuse project
++ Refine the continuum selection logic
++ Use the binned maps to choose the best pixels, so we can get the best line extraction
+
+
+* New correlations within a single line
++ Unlike the [[id:D0BF70CD-55F8-4BA0-A2B1-8C5BE79642FA][other correlation graphs]] below, these are
+  1. For correlations between different moments of the same line
+  2. Using the wider set of lines, which hasn't been patfixxed yet
+
+
+
+** Mean velocity vs brightness
+#+name: bright-vmean-plot
+#+header: :var LINE="O_I-8446" D="~/tmp/musedata"
+#+header: :var BMIN=500 BMAX=200000 VMIN=-100.0 VMAX=100.0 GAMMA=1.0 NBIN=50
+#+BEGIN_SRC python :results file :return plotfile
+  import os
+  import numpy as np
+  from astropy.io import fits
+  from matplotlib import pyplot as plt
+  from matplotlib.ticker import (MultipleLocator, LogLocator, 
+				 MaxNLocator, FormatStrFormatter)
+  import seaborn as sns
+
+  VHEL = -16.217273731
+
+  dd = os.path.expanduser(D)
+
+  plotfile = 'hist-bright-vmean-{}.png'.format(LINE)
+  sns.set(style='whitegrid', font_scale=1.0, color_codes=True)
+  fig, axes = plt.subplots(2, 2, figsize=(5, 5), sharex=True, sharey=True)
+
+  nbins = [1, 4, 16, 64]
+
+  for ax, nbin in zip(axes.flat, nbins):
+
+      binsuffix = 'bin{:03d}'.format(nbin)
+      vfn = os.path.join(dd, 'mean-{}-{}.fits'.format(LINE, binsuffix))
+      bfn = os.path.join(dd, 'linesum-{}-{}.fits'.format(LINE, binsuffix))
+      hdu_name = 'SCALED'
+
+      vmean = fits.open(vfn)[hdu_name].data
+      bright = fits.open(bfn)[hdu_name].data
+
+
+      # Uniform weights for now
+      w = np.ones_like(bright).astype(bool)
+
+      m = (np.isfinite(vmean + bright) & (vmean != 0.0) & (bright > 0.0))
+
+      msg = 'Binning {0} x {0}\n{1} map pixels'.format(nbin, m.sum()//(nbin*nbin))
+      xmin, xmax = np.log10(BMIN), np.log10(BMAX)
+      ymin, ymax = VMIN, VMAX
+      H, xedges, yedges = np.histogram2d(np.log10(bright[m]), vmean[m], 
+					 bins=[NBIN, NBIN],
+					 range=[[xmin, xmax], [ymin, ymax]],
+					 weights=w[m]
+					)
+
+
+      # sns.distplot(xsig[m]**2, kde=False, hist_kws={'range': [0, 1.5*SIGMAX**2]})
+      ax.imshow((H.T)**(1.0/GAMMA), 
+		extent=[xmin, xmax, ymin, ymax], 
+		interpolation='none', aspect='auto', 
+		origin='lower', cmap=plt.cm.gray_r)
+      if ymin < VHEL:
+          ax.axhline(VHEL, ls='--', lw=1)
+      ax.text(0.5, 0.98, msg, ha='center', va='top',
+              fontsize='xx-small', bbox={'color': 'w', 'alpha': 0.7},
+              transform=ax.transAxes)
+      ax.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+      ax.xaxis.set_major_locator(MaxNLocator(4, integer=True))
+      ax.yaxis.set_major_formatter(FormatStrFormatter('%d'))
+      ax.yaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
+
+
+  axes[1, 0].set(
+      xlabel='Log line brightness: ' + LINE,
+      ylabel='Mean heliocentric line velocity: ' + LINE,
+      xlim=[xmin, xmax],
+      ylim=[ymin, ymax],
+  )
+  fig.tight_layout()
+  fig.savefig(plotfile, dpi=200)
+
+#+END_SRC
+** Sigma vs brightness
+
+#+name: bright-sigma-plot
+#+header: :var LINE="O_I-8446" D="~/tmp/musedata"
+#+header: :var BMIN=500 BMAX=200000 SMIN=00.0 SMAX=100.0 GAMMA=1.0 NBIN=50
+#+BEGIN_SRC python :results file :return plotfile
+  import os
+  import numpy as np
+  from astropy.io import fits
+  from matplotlib import pyplot as plt
+  from matplotlib.ticker import (MultipleLocator, LogLocator, 
+				 MaxNLocator, FormatStrFormatter)
+  import seaborn as sns
+
+  VHEL = -16.217273731
+
+  dd = os.path.expanduser(D)
+
+  plotfile = 'hist-bright-sigma-{}.png'.format(LINE)
+  sns.set(style='whitegrid', font_scale=1.0, color_codes=True)
+  fig, axes = plt.subplots(2, 2, figsize=(5, 5), sharex=True, sharey=True)
+
+  nbins = [1, 4, 16, 64]
+
+  for ax, nbin in zip(axes.flat, nbins):
+
+      binsuffix = 'bin{:03d}'.format(nbin)
+      sfn = os.path.join(dd, 'sigma-{}-{}.fits'.format(LINE, binsuffix))
+      bfn = os.path.join(dd, 'linesum-{}-{}.fits'.format(LINE, binsuffix))
+      hdu_name = 'SCALED'
+
+      sigma = fits.open(sfn)[hdu_name].data
+      bright = fits.open(bfn)[hdu_name].data
+
+
+      # Uniform weights for now
+      w = np.ones_like(bright).astype(bool)
+
+      m = (np.isfinite(sigma + bright) & (sigma > 0.0) & (bright > 0.0))
+
+      msg = 'Binning {0} x {0}\n{1} map pixels'.format(nbin, m.sum()//(nbin*nbin))
+      xmin, xmax = np.log10(BMIN), np.log10(BMAX)
+      ymin, ymax = SMIN, SMAX
+      H, xedges, yedges = np.histogram2d(np.log10(bright[m]), sigma[m], 
+					 bins=[NBIN, NBIN],
+					 range=[[xmin, xmax], [ymin, ymax]],
+					 weights=w[m]
+					)
+
+
+      # sns.distplot(xsig[m]**2, kde=False, hist_kws={'range': [0, 1.5*SIGMAX**2]})
+      ax.imshow((H.T)**(1.0/GAMMA), 
+		extent=[xmin, xmax, ymin, ymax], 
+		interpolation='none', aspect='auto', 
+		origin='lower', cmap=plt.cm.gray_r)
+
+      ax.text(0.5, 0.98, msg, ha='center', va='top',
+              fontsize='xx-small', bbox={'color': 'w', 'alpha': 0.7},
+              transform=ax.transAxes)
+      ax.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+      ax.xaxis.set_major_locator(MaxNLocator(4, integer=True))
+      ax.yaxis.set_major_formatter(FormatStrFormatter('%d'))
+      ax.yaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
+
+
+  axes[1, 0].set(
+      xlabel='Log line brightness: ' + LINE,
+      ylabel='RMS line width: ' + LINE,
+      xlim=[xmin, xmax],
+      ylim=[ymin, ymax],
+  )
+  fig.tight_layout()
+  fig.savefig(plotfile, dpi=200)
+#+END_SRC
+
+#+RESULTS: bright-sigma-plot
+[[file:hist-bright-sigma-O_I-8446.png]]
+
+** [O I] and [S III] lines
+#+call: bright-sigma-plot(LINE="O_I-8446", BMIN=1000, BMAX=200000, SMIN=25.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-O_I-8446.png]]
+
+#+call: bright-vmean-plot(LINE="O_I-8446", BMIN=1000, BMAX=200000, VMIN=15.0, VMAX=40.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_I-8446.png]]
+
+#+call: bright-sigma-plot(LINE="O_I-5577", BMIN=6000, BMAX=15000, SMIN=60.0, SMAX=120.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-O_I-5577.png]]
+
+#+call: bright-vmean-plot(LINE="O_I-5577", BMIN=4000, BMAX=20000, VMIN=-45, VMAX=15)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_I-5577.png]]
+
+
+#+call: bright-sigma-plot(LINE="S_III-9069", BMIN=70000, BMAX=7000000, SMIN=30.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-S_III-9069.png]]
+
+#+call: bright-vmean-plot(LINE="S_III-9069", BMIN=70000, BMAX=7000000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-S_III-9069.png]]
+
+#+call: bright-sigma-plot(LINE="O_I-6300", BMIN=3000, BMAX=200000, SMIN=30.0, SMAX=90.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-O_I-6300.png]]
+
+#+call: bright-vmean-plot(LINE="O_I-6300", BMIN=3000, BMAX=200000, VMIN=-25.0, VMAX=35.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_I-6300.png]]
+
++ Strangely, [O I] 6300 does not quite get to the expected velocity in the fainter parts
+  + But is close enough
++ Stranger is that there is a double strand
+
+#+call: bright-sigma-plot(LINE="S_III-6312", BMIN=2500, BMAX=250000, SMIN=30.0, SMAX=90.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-S_III-6312.png]]
+
+#+call: bright-vmean-plot(LINE="S_III-6312", BMIN=2500, BMAX=250000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-S_III-6312.png]]
+
+
+#+call: bright-sigma-plot(LINE="O_I-6364", BMIN=1000, BMAX=70000, SMIN=30.0, SMAX=90.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-O_I-6364.png]]
+
+#+call: bright-vmean-plot(LINE="O_I-6364", BMIN=1000, BMAX=70000, VMIN=-25.0, VMAX=35.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_I-6364.png]]
+
+
+
+** Near red lines: H alpha [N II], He I, [S II] 
+#+call: bright-sigma-plot(LINE="H_I-6563", BMIN=300000, BMAX=30000000, SMIN=40.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-6563.png]]
+
+#+call: bright-vmean-plot(LINE="H_I-6563", BMIN=300000, BMAX=30000000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-H_I-6563.png]]
+
+
+#+call: bright-sigma-plot(LINE="N_II-6583", BMIN=60000, BMAX=6000000, SMIN=40.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-N_II-6583.png]]
+
+#+call: bright-vmean-plot(LINE="N_II-6583", BMIN=60000, BMAX=6000000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-N_II-6583.png]]
+
+
+#+call: bright-sigma-plot(LINE="N_II-6548", BMIN=20000, BMAX=2000000, SMIN=40.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-N_II-6548.png]]
+
+#+call: bright-vmean-plot(LINE="N_II-6548", BMIN=20000, BMAX=2000000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-N_II-6548.png]]
+
+
+#+call: bright-sigma-plot(LINE="He_I-6678", BMIN=3500, BMAX=350000, SMIN=40.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-He_I-6678.png]]
+
+#+call: bright-vmean-plot(LINE="He_I-6678", BMIN=3500, BMAX=350000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-He_I-6678.png]]
+
+
+#+call: bright-sigma-plot(LINE="S_II-6716", BMIN=10000, BMAX=500000, SMIN=35.0, SMAX=55.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-S_II-6716.png]]
+
+#+call: bright-vmean-plot(LINE="S_II-6716", BMIN=10000, BMAX=500000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-S_II-6716.png]]
+
+#+call: bright-sigma-plot(LINE="S_II-6731", BMIN=10000, BMAX=500000, SMIN=35.0, SMAX=55.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-S_II-6731.png]]
+
+#+call: bright-vmean-plot(LINE="S_II-6731", BMIN=10000, BMAX=500000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-S_II-6731.png]]
+
+
+** The 7000 \to 8000 \AA range: O I, [Ar III], He I, C II, Ca I
+#+call: bright-sigma-plot(LINE="O_I-7002", BMIN=100, BMAX=20000, SMIN=0.0, SMAX=150.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-O_I-7002.png]]
+
+#+call: bright-vmean-plot(LINE="O_I-7002", BMIN=100, BMAX=20000, VMIN=-25.0, VMAX=45.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_I-7002.png]]
+
+#+call: bright-sigma-plot(LINE="Ar_III-7136", BMIN=10000, BMAX=2000000, SMIN=35.0, SMAX=55.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-Ar_III-7136.png]]
+
+#+call: bright-vmean-plot(LINE="Ar_III-7136", BMIN=10000, BMAX=2000000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-Ar_III-7136.png]]
+
+
+#+call: bright-sigma-plot(LINE="Ar_III-7751", BMIN=4000, BMAX=400000, SMIN=35.0, SMAX=55.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-Ar_III-7751.png]]
+
+#+call: bright-vmean-plot(LINE="Ar_III-7751", BMIN=4000, BMAX=400000, VMIN=-25.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-Ar_III-7751.png]]
+
+
+#+call: bright-sigma-plot(LINE="He_I-7065", BMIN=5000, BMAX=1000000, SMIN=35.0, SMAX=55.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-He_I-7065.png]]
+
+#+call: bright-vmean-plot(LINE="He_I-7065", BMIN=5000, BMAX=1000000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-He_I-7065.png]]
+
+
+#+call: bright-sigma-plot(LINE="C_II-7231", BMIN=500, BMAX=30000, SMIN=0.0, SMAX=150.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-C_II-7231.png]]
+
+#+call: bright-vmean-plot(LINE="C_II-7231", BMIN=300, BMAX=30000, VMIN=20.0, VMAX=90.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-C_II-7231.png]]
+
+#+call: bright-sigma-plot(LINE="C_II-7236", BMIN=500, BMAX=30000, SMIN=0.0, SMAX=150.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-C_II-7236.png]]
+
+#+call: bright-vmean-plot(LINE="C_II-7236", BMIN=300, BMAX=30000, VMIN=-40.0, VMAX=100.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-C_II-7236.png]]
+
++ Very strange behaviour of these two lines: they must have various components
++ But at high intensities they tend to V = -20, or V = +75 respectively
+
+#+call: bright-sigma-plot(LINE="He_I-7281", BMIN=1000, BMAX=100000, SMIN=35.0, SMAX=55.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-He_I-7281.png]]
+
+#+call: bright-sigma-plot(LINE="Ca_I-7890", BMIN=500, BMAX=20000, SMIN=0.0, SMAX=155.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-Ca_I-7890.png]]
+
+
+#+call: bright-sigma-plot(LINE="O_II-7318", BMIN=5000, BMAX=1000000, SMIN=35.0, SMAX=55.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-O_II-7318.png]]
+
+#+call: bright-vmean-plot(LINE="O_II-7318", BMIN=5000, BMAX=1000000, VMIN=35.0, VMAX=90.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_II-7318.png]]
+
+#+call: bright-sigma-plot(LINE="O_II-7330", BMIN=5000, BMAX=1000000, SMIN=35.0, SMAX=55.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-O_II-7330.png]]
+
+#+call: bright-vmean-plot(LINE="O_II-7330", BMIN=5000, BMAX=1000000, VMIN=25.0, VMAX=50.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_II-7330.png]]
+
+
+*** H I lines in the red
+
+#+call: bright-sigma-plot(LINE="H_I-8438", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-8438.png]]
+
+#+call: bright-vmean-plot(LINE="H_I-8438", BMIN=1000, BMAX=100000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-H_I-8438.png]]
+
+#+call: bright-sigma-plot(LINE="H_I-8467", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-8467.png]]
+
+#+call: bright-sigma-plot(LINE="H_I-8502", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-8502.png]]
+
+#+call: bright-vmean-plot(LINE="H_I-8502", BMIN=1500, BMAX=150000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-H_I-8502.png]]
+
+#+call: bright-sigma-plot(LINE="H_I-8545", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-8545.png]]
+
+#+call: bright-vmean-plot(LINE="H_I-8545", BMIN=2000, BMAX=200000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-H_I-8545.png]]
+
+#+call: bright-sigma-plot(LINE="H_I-8598", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-8598.png]]
+
+#+call: bright-sigma-plot(LINE="H_I-8665", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-8665.png]]
+
+#+call: bright-vmean-plot(LINE="H_I-8665", BMIN=2000, BMAX=200000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-H_I-8665.png]]
+
++ This seems to have a slight downward tug towards the bluw, which slightly shears the whole pattern
++ That will be due to the O_{2} sky line that overlaps it
+  + Peak intensity of sky line is about 1/60 of H I
+
+#+call: bright-sigma-plot(LINE="H_I-8750", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-8750.png]]
+
++ Strangely, 8750 has the smallest width, falling down as low as 35 km/s
+  + This is odd because the naive expectation is for the instrumental width to fall  with increasing lambda
+  + Furthermore, this ocsurs not at the highest brightness, but at intermediate brightnesses.  But the reason for this seems to be contamination by a high ionization line that puts up the width a bit in the bright central regions
+
+#+call: bright-vmean-plot(LINE="H_I-8750", BMIN=2000, BMAX=200000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-H_I-8750.png]]
+
+
+#+call: bright-sigma-plot(LINE="H_I-8863", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-8863.png]]
+
+#+call: bright-vmean-plot(LINE="H_I-8863", BMIN=3000, BMAX=300000, VMIN=5.0, VMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-H_I-8863.png]]
+
++ This is clearly pulled to the red by the effect of the sky line at 8867.641
++ The velocity in H I frame is
+  + 3e5 (8867.641 - 8862.79) / 8862.79
+  + = +164 km/s, but then -16 for helio correction, so +148
++ But we only get to about +50, so the H line must dominate over the entire map
+
+#+call: bright-sigma-plot(LINE="H_I-9015", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-9015.png]]
+
+#+call: bright-vmean-plot(LINE="H_I-9015", BMIN=3000, BMAX=300000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-H_I-9015.png]]
+
+#+call: bright-sigma-plot(LINE="H_I-9229", BMIN=1000, BMAX=1000000, SMIN=30.0, SMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-9229.png]]
+
+#+call: bright-vmean-plot(LINE="H_I-9229", BMIN=4000, BMAX=400000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-H_I-9229.png]]
+
+
+*** Blue lines: [Fe III], He I, H\beta, [O III], [Cl III]
+
+#+call: bright-sigma-plot(LINE="Fe_III-4658", BMIN=1000, BMAX=1000000, SMIN=60.0, SMAX=150.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-Fe_III-4658.png]]
+
+#+call: bright-vmean-plot(LINE="Fe_III-4658", BMIN=500, BMAX=100000, VMIN=-25.0, VMAX=50.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-Fe_III-4658.png]]
+
++ A weak line, evidence of sky component of the same line
+
+#+call: bright-sigma-plot(LINE="He_I-4713", BMIN=1000, BMAX=1000000, SMIN=60.0, SMAX=150.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-He_I-4713.png]]
+
+#+call: bright-vmean-plot(LINE="He_I-4713", BMIN=500, BMAX=50000, VMIN=-25.0, VMAX=50.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-He_I-4713.png]]
+
++ This is reasonably well-behaved (except for being 4 km/s too blue), but it is just too noisy
+
+#+call: bright-sigma-plot(LINE="H_I-4861", BMIN=30000, BMAX=30000000, SMIN=60.0, SMAX=90.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-H_I-4861.png]]
+
+#+call: bright-vmean-plot(LINE="H_I-4861", BMIN=60000, BMAX=6000000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-H_I-4861.png]]
+
++ Definitely shifted by about -4 km/s with respect to H\alpha
++ Also, you can see the effects of reddening, which is greater for the lower brightness parts on the whole
+
+
+#+call: bright-sigma-plot(LINE="He_I-4922", BMIN=1000, BMAX=1000000, SMIN=60.0, SMAX=150.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-He_I-4922.png]]
+
+#+call: bright-vmean-plot(LINE="He_I-4922", BMIN=300, BMAX=100000, VMIN=-25.0, VMAX=80.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-He_I-4922.png]]
+
++ Skews to red at low brightness, suggesting contamination with something
+
+
+#+call: bright-sigma-plot(LINE="O_III-4959", BMIN=30000, BMAX=30000000, SMIN=60.0, SMAX=90.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-O_III-4959.png]]
+
+#+call: bright-vmean-plot(LINE="O_III-4959", BMIN=40000, BMAX=8000000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_III-4959.png]]
+
+#+call: bright-sigma-plot(LINE="O_III-5007", BMIN=30000, BMAX=30000000, SMIN=60.0, SMAX=90.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-O_III-5007.png]]
+
+#+call: bright-vmean-plot(LINE="O_III-5007", BMIN=120000, BMAX=24000000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_III-5007.png]]
+
+#+call: bright-sigma-plot(LINE="Fe_III-5270", BMIN=1000, BMAX=200000, SMIN=50.0, SMAX=120.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-Fe_III-5270.png]]
+
+#+call: bright-sigma-plot(LINE="Cl_III-5518", BMIN=1000, BMAX=200000, SMIN=50.0, SMAX=120.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-Cl_III-5518.png]]
+
+#+call: bright-vmean-plot(LINE="Cl_III-5518", BMIN=1000, BMAX=200000, VMIN=-25.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-Cl_III-5518.png]]
+
+#+call: bright-sigma-plot(LINE="Cl_III-5538", BMIN=1000, BMAX=200000, SMIN=50.0, SMAX=120.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-Cl_III-5538.png]]
+
+#+call: bright-vmean-plot(LINE="Cl_III-5538", BMIN=1000, BMAX=200000, VMIN=-25.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-Cl_III-5538.png]]
+
+#+call: bright-sigma-plot(LINE="N_II-5755", BMIN=1000, BMAX=200000, SMIN=50.0, SMAX=120.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-N_II-5755.png]]
+
+#+call: bright-vmean-plot(LINE="N_II-5755", BMIN=300, BMAX=100000, VMIN=-25.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-N_II-5755.png]]
+
++ This is very strange - it is negative, even at the highest brightness
+
+#+call: bright-sigma-plot(LINE="He_I-5876", BMIN=10000, BMAX=2000000, SMIN=45.0, SMAX=75.0)
+
+#+RESULTS:
+[[file:hist-bright-sigma-He_I-5876.png]]
+
+#+call: bright-vmean-plot(LINE="He_I-5876", BMIN=10000, BMAX=2000000, VMIN=5.0, VMAX=30.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-He_I-5876.png]]
+
+#+call: bright-vmean-plot(LINE="Si_II-5979", BMIN=200, BMAX=10000, VMIN=-25.0, VMAX=40.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-Si_II-5979.png]]
+
+#+call: bright-vmean-plot(LINE="O_I-6046", BMIN=100, BMAX=20000, VMIN=-35.0, VMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_I-6046.png]]
+
+#+call: bright-vmean-plot(LINE="O_I-7002", BMIN=100, BMAX=20000, VMIN=-35.0, VMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_I-7002.png]]
+
+#+call: bright-vmean-plot(LINE="O_I-7254", BMIN=100, BMAX=20000, VMIN=-35.0, VMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-O_I-7254.png]]
+
+#+call: bright-vmean-plot(LINE="N_I-7468", BMIN=100, BMAX=20000, VMIN=-35.0, VMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-N_I-7468.png]]
+
+#+call: bright-vmean-plot(LINE="Fe_II-7453", BMIN=50, BMAX=10000, VMIN=-35.0, VMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-Fe_II-7453.png]]
+
+#+call: bright-vmean-plot(LINE="Ca_I-7890", BMIN=600, BMAX=10000, VMIN=-50.0, VMAX=45.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-Ca_I-7890.png]]
+
++ Heading towards its own sky?
+
+#+call: bright-vmean-plot(LINE="Cl_IV-8046", BMIN=50, BMAX=10000, VMIN=-35.0, VMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-Cl_IV-8046.png]]
+
+#+call: bright-vmean-plot(LINE="N_I-8216", BMIN=100, BMAX=20000, VMIN=-60.0, VMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-N_I-8216.png]]
+
+#+call: bright-vmean-plot(LINE="N_I-8223", BMIN=100, BMAX=20000, VMIN=-60.0, VMAX=60.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-N_I-8223.png]]
+
+#+call: bright-vmean-plot(LINE="N_I-8680", BMIN=100, BMAX=20000, VMIN=-20.0, VMAX=100.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-N_I-8680.png]]
+
+#+call: bright-vmean-plot(LINE="N_I-8686", BMIN=100, BMAX=20000, VMIN=-100.0, VMAX=20.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-N_I-8686.png]]
+
++ These N I lines are all over the place.  The IDs must be wrong
+
+#+call: bright-vmean-plot(LINE="N_I-8703", BMIN=100, BMAX=20000, VMIN=-40.0, VMAX=80.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-N_I-8703.png]]
+
++ That one looks OK
+
+#+call: bright-vmean-plot(LINE="N_I-8712", BMIN=100, BMAX=20000, VMIN=-40.0, VMAX=80.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-N_I-8712.png]]
+
+#+call: bright-vmean-plot(LINE="C_I-8727", BMIN=100, BMAX=20000, VMIN=-40.0, VMAX=80.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-C_I-8727.png]]
+
+#+call: bright-vmean-plot(LINE="He_I-8733", BMIN=100, BMAX=20000, VMIN=-40.0, VMAX=80.0)
+
+#+RESULTS:
+[[file:hist-bright-vmean-He_I-8733.png]]
+
+* Making correlations
+:PROPERTIES:
+:ID:       D0BF70CD-55F8-4BA0-A2B1-8C5BE79642FA
+:END:
+
+** Mean vs mean
+#+name: mean-mean-plot
+#+header: :var XLINE="He_I-6678" YLINE="H_I-6563"
+#+header: :var VMIN=5 VMAX=25 GAMMA=1.0 NBIN=50 BMIN=0.5
+#+BEGIN_SRC python :results file :return plotfile
+  import numpy as np
+  from astropy.io import fits
+  from matplotlib import pyplot as plt
+  from matplotlib.ticker import (MultipleLocator, LogLocator, 
+				 MaxNLocator, FormatStrFormatter)
+  import seaborn as sns
+
+  VHEL = -16.217273731
+
+  plotfile = 'hist-mean-{}-mean-{}.png'.format(XLINE, YLINE)
+  sns.set(style='white', font_scale=1.0, color_codes=True)
+  fig, axes = plt.subplots(2, 2, figsize=(5, 5), sharex=True, sharey=True)
+
+  nbins = [1, 4, 16, 64]
+
+  for ax, nbin in zip(axes.flat, nbins):
+
+      binsuffix = 'bin{:03d}'.format(nbin)
+      xvfn = 'data/mean-{}-patfixx-{}.fits'.format(XLINE, binsuffix)
+      yvfn = 'data/mean-{}-patfixx-{}.fits'.format(YLINE, binsuffix)
+      xbfn = 'data/linesum-{}-{}.fits'.format(XLINE, binsuffix)
+      ybfn = 'data/linesum-{}-{}.fits'.format(YLINE, binsuffix)
+      hdu_name = 'SCALED'
+
+      xv = fits.open(xvfn)[hdu_name].data + VHEL
+      yv = fits.open(yvfn)[hdu_name].data + VHEL
+      xb = fits.open(xbfn)[hdu_name].data
+      yb = fits.open(ybfn)[hdu_name].data
+
+      w = xb + yb
+      m = (np.isfinite(xv + yv + w) &
+           (xb > BMIN*np.nanmedian(xb)) &
+           (yb > BMIN*np.nanmedian(yb)))
+
+      msg = 'Binning {0} x {0}\n{1} map pixels'.format(nbin, m.sum()//(nbin*nbin))
+      xmin, xmax = ymin, ymax = VMIN, VMAX
+
+      H, xedges, yedges = np.histogram2d(xv[m], yv[m], 
+					 bins=[NBIN, NBIN],
+					 range=[[xmin, xmax], [ymin, ymax]],
+					 weights=w[m]
+					)
+
+
+      # sns.distplot(xsig[m]**2, kde=False, hist_kws={'range': [0, 1.5*SIGMAX**2]})
+      ax.imshow((H.T)**(1.0/GAMMA), 
+		extent=[xmin, xmax, ymin, ymax], 
+		interpolation='none', aspect='auto', 
+		origin='lower', cmap=plt.cm.gray_r)
+      ax.plot([xmin, xmax], [ymin, ymax], 'r', alpha=0.3, lw=2)
+      ax.text(0.5, 0.98, msg, ha='center', va='top',
+              fontsize='xx-small',
+              transform=ax.transAxes)
+      ax.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+      ax.xaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
+      ax.yaxis.set_major_formatter(FormatStrFormatter('%d'))
+      ax.yaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
+
+
+  axes[1, 0].set(
+      xlabel='Mean velocity ' + XLINE,
+      ylabel='Mean velocity ' + YLINE,
+      xlim=[xmin, xmax],
+      ylim=[ymin, ymax],
+  )
+  fig.tight_layout()
+  fig.savefig(plotfile, dpi=200)
+#+END_SRC
+
+#+RESULTS: mean-mean-plot
+[[file:hist-mean-He_I-6678-mean-H_I-6563.png]]
+
+#+call: mean-mean-plot(XLINE="He_I-5876", YLINE="H_I-4861")
+
+#+RESULTS:
+[[file:hist-mean-He_I-5876-mean-H_I-4861.png]]
+
+This must be affected by the fine structure, which perhaps is not taken into account in the He I 5876 rest wavelength. On the other hand, it is the Hb line that shows the greatest deviation from expectations (see next pair)
+
+#+call: mean-mean-plot(XLINE="O_III-5007", YLINE="H_I-4861", VMIN=0, VMAX=20)
+
+#+RESULTS:
+[[file:hist-mean-O_III-5007-mean-H_I-4861.png]]
+
+I am having to shift 5 km/s to the blue for these lines, which suggests an issue with the wavelength calibration between the blue and the red.  Turns out that Weilbacher et al already noticed this
+
+#+call: mean-mean-plot(XLINE="O_III-4959", YLINE="H_I-4861", VMIN=0, VMAX=20)
+
+#+RESULTS:
+[[file:hist-mean-O_III-4959-mean-H_I-4861.png]]
+
+#+call: mean-mean-plot(XLINE="O_III-5007", YLINE="O_III-4959", VMIN=0, VMAX=20)
+
+#+RESULTS:
+[[file:hist-mean-O_III-5007-mean-O_III-4959.png]]
+
+Strangely, there is a slight difference between these two.  Is it a calibration error, or is one of them blended with something?  Actually, it is only 0.4 km/s difference. 
+
+#+call: mean-mean-plot(XLINE="N_II-6548", YLINE="H_I-6563", VMIN=10, VMAX=30, BMIN=0.0)
+
+#+RESULTS:
+[[file:hist-mean-N_II-6548-mean-H_I-6563.png]]
+
+#+call: mean-mean-plot(XLINE="N_II-6583", YLINE="H_I-6563", VMIN=10, VMAX=30, BMIN=0.0)
+
+#+RESULTS:
+[[file:hist-mean-N_II-6583-mean-H_I-6563.png]]
+
+#+call: mean-mean-plot(XLINE="N_II-6583", YLINE="N_II-6548", VMIN=10, VMAX=30, BMIN=0.0)
+
+#+RESULTS:
+[[file:hist-mean-N_II-6583-mean-N_II-6548.png]]
+
+This shows a 3 km/s offset between the two [N II] lines, which is unfortunate, but it is smaller than the offset between either line and Ha.  And we can interpolate between the two, I suppose
+
+#+call: mean-mean-plot(XLINE="O_III-5007", YLINE="N_II-6583", NBIN=50, VMIN=3, VMAX=28, BMIN=0.0)
+
+#+RESULTS:
+[[file:hist-mean-O_III-5007-mean-N_II-6583.png]]
+
+This one should be an exact replica of Fig 17(b) of GDH08, and it looks pretty much like it, except for:
+1. About a +12 km/s in the [O III] velocity
+2. Maybe a +14 km/s offset in the [N II] velocity
+
+#+call: mean-mean-plot(XLINE="H_I-9015", YLINE="H_I-9229", VMIN=5, VMAX=25)
+
+#+RESULTS:
+[[file:hist-mean-H_I-9015-mean-H_I-9229.png]]
+
+This has about a 1 km/s offset between the two lines
+
+#+call: mean-mean-plot(XLINE="S_III-9069", YLINE="H_I-9229", VMIN=5, VMAX=25)
+
+#+RESULTS:
+[[file:hist-mean-S_III-9069-mean-H_I-9229.png]]
+
+This shows [S III] as being slightly redder than H I. 
+
+#+call: mean-mean-plot(XLINE="H_I-6563", YLINE="H_I-9229", VMIN=5, VMAX=25)
+
+#+RESULTS:
+[[file:hist-mean-H_I-6563-mean-H_I-9229.png]]
+
+#+call: mean-mean-plot(XLINE="H_I-6563", YLINE="H_I-4861", VMIN=0, VMAX=20)
+
+#+RESULTS:
+[[file:hist-mean-H_I-6563-mean-H_I-4861.png]]
+
+
+** Variance vs variance
+#+name: var-var-plot
+#+header: :var XLINE="He_I-6678" YLINE="H_I-6563"
+#+header: :var SIGMIN=46 SIGMAX=50 GAMMA=1.0 NBIN=50 BMIN=0.1
+#+BEGIN_SRC python :results file :return plotfile
+  import numpy as np
+  from astropy.io import fits
+  from matplotlib import pyplot as plt
+  from matplotlib.ticker import (MultipleLocator, LogLocator, 
+				 MaxNLocator, FormatStrFormatter)
+  import seaborn as sns
+
+  plotfile = 'hist-var-{}-var-{}.png'.format(XLINE, YLINE)
+  sns.set(style='white', font_scale=1.0, color_codes=True)
+  fig, axes = plt.subplots(2, 2, figsize=(5, 5), sharex=True, sharey=True)
+
+  nbins = [1, 4, 16, 64]
+
+  for ax, nbin in zip(axes.flat, nbins):
+      binsuffix = 'bin{:03d}'.format(nbin)
+      xsfn = 'data/sigma-{}-patfixx-{}.fits'.format(XLINE, binsuffix)
+      ysfn = 'data/sigma-{}-patfixx-{}.fits'.format(YLINE, binsuffix)
+      xbfn = 'data/linesum-{}-{}.fits'.format(XLINE, binsuffix)
+      ybfn = 'data/linesum-{}-{}.fits'.format(YLINE, binsuffix)
+      hdu_name = 'SCALED'
+
+      xsig = fits.open(xsfn)[hdu_name].data
+      ysig = fits.open(ysfn)[hdu_name].data
+      xb = fits.open(xbfn)[hdu_name].data
+      yb = fits.open(ybfn)[hdu_name].data
+
+      w = xb + yb
+      m = (np.isfinite(xsig + ysig + w) &
+           (xb > BMIN*np.nanmedian(xb)) &
+           (yb > BMIN*np.nanmedian(yb)))
+
+      msg = 'Binning {0} x {0}\n{1} map pixels'.format(nbin, m.sum()//(nbin*nbin))
+      xmin, xmax = ymin, ymax = SIGMIN**2, SIGMAX**2
+
+      H, xedges, yedges = np.histogram2d(xsig[m]**2, ysig[m]**2, 
+					 bins=[NBIN, NBIN],
+					 range=[[xmin, xmax], [ymin, ymax]],
+					 weights=w[m]
+					)
+
+
+      ax.imshow((H.T)**(1.0/GAMMA), 
+		extent=[xmin, xmax, ymin, ymax], 
+		interpolation='none', aspect='auto', 
+		origin='lower', cmap=plt.cm.gray_r)
+      ax.plot([xmin, xmax], [ymin, ymax], 'r', alpha=0.3, lw=2)
+      ax.text(0.5, 0.98, msg, ha='center', va='top',
+              fontsize='xx-small',
+              transform=ax.transAxes)
+      ax.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+      ax.xaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
+      ax.yaxis.set_major_formatter(FormatStrFormatter('%d'))
+      ax.yaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
+
+  axes[1, 0].set(
+      xlabel='Variance ' + XLINE,
+      ylabel='Variance ' + YLINE,
+      xlim=[xmin, xmax],
+      ylim=[ymin, ymax],
+  )
+  fig.tight_layout()
+  fig.savefig(plotfile, dpi=200)
+#+END_SRC
+
+#+RESULTS: var-var-plot
+[[file:hist-var-He_I-6678-var-H_I-6563.png]]
+
+#+call: var-var-plot(XLINE="He_I-5876", YLINE="H_I-4861", SIGMIN=52, SIGMAX=75)
+
+#+RESULTS:
+[[file:hist-var-He_I-5876-var-H_I-4861.png]]
+
+#+call: var-var-plot(XLINE="O_III-5007", YLINE="H_I-4861", SIGMIN=63, SIGMAX=75)
+
+#+RESULTS:
+[[file:hist-var-O_III-5007-var-H_I-4861.png]]
+
+#+call: var-var-plot(XLINE="O_III-4959", YLINE="H_I-4861", SIGMIN=64, SIGMAX=75)
+
+#+RESULTS:
+[[file:hist-var-O_III-4959-var-H_I-4861.png]]
+
+#+call: var-var-plot(XLINE="O_III-5007", YLINE="O_III-4959", SIGMIN=67, SIGMAX=71)
+
+#+RESULTS:
+[[file:hist-var-O_III-5007-var-O_III-4959.png]]
+
+This shows a small offset, presumably due to increase in the instrumental width going from 5007 to 4959
+
+
+#+call: var-var-plot(XLINE="N_II-6583", YLINE="H_I-6563", SIGMIN=46, SIGMAX=50)
+
+#+RESULTS:
+[[file:hist-var-N_II-6583-var-H_I-6563.png]]
+
+#+call: var-var-plot(XLINE="N_II-6548", YLINE="H_I-6563", SIGMIN=46, SIGMAX=50)
+
+#+RESULTS:
+[[file:hist-var-N_II-6548-var-H_I-6563.png]]
+
+#+call: var-var-plot(XLINE="N_II-6548", YLINE="N_II-6583", SIGMIN=45, SIGMAX=49)
+
+#+RESULTS:
+[[file:hist-var-N_II-6548-var-N_II-6583.png]]
+
+This is disappointingly circular, implying that the sigma variations for the weaker 6548 line are overwhelmingly due to noise.  *Maybe binning might help*
+
+#+call: var-var-plot(XLINE="H_I-9015", YLINE="H_I-9229", SIGMIN=35, SIGMAX=41)
+
+#+RESULTS:
+[[file:hist-var-H_I-9015-var-H_I-9229.png]]
+
+#+call: var-var-plot(XLINE="S_III-9069", YLINE="H_I-9229", SIGMIN=35, SIGMAX=41, BMIN=0.5)
+
+#+RESULTS:
+[[file:hist-var-S_III-9069-var-H_I-9229.png]]
+
+#+call: var-var-plot(XLINE="S_III-9069", YLINE="H_I-9015", SIGMIN=35, SIGMAX=41, BMIN=0.5)
+
+#+RESULTS:
+[[file:hist-var-S_III-9069-var-H_I-9015.png]]
+
+
+
+** Velocity differences
++ Either velocity differences against each other
+  + In GDH08 we plotted
+    + (H - O) against (N - O)
+    + (6563-5007) against (6583-5007)
+    + Where the slope gives (1 - f)
+  + But better alternative is
+    + (N - H) against (H - O)
+    + (6583 - 6563) against (4861 - 5007)
+  + Alternatively, use (6583-5007) against (6583-6563)
+  + Which should give f directly
++ Or against line ratios
+
+#+name: dv-dv-plot
+#+header: :var XLINE1="H_I-4861" XLINE2="O_III-5007"
+#+header: :var YLINE1="N_II-6583" YLINE2="H_I-6563"
+#+header: :var VMIN=-5 VMAX=10 GAMMA=1.0 NBIN=50 nbin=16 BMIN=0.1
+#+BEGIN_SRC python :results file :return plotfile
+  import numpy as np
+  from astropy.io import fits
+  from matplotlib import pyplot as plt
+  from matplotlib.ticker import (MultipleLocator, LogLocator, 
+				 MaxNLocator, FormatStrFormatter)
+  import seaborn as sns
+
+  wavs = [s.split('-')[-1] for s in
+          [XLINE1, XLINE2, YLINE1, YLINE2]]
+  plotfile = 'hist-dv-{}-{}-dv-{}-{}.png'.format(*wavs)
+  hdu_name = 'SCALED'
+
+  binsuffix = 'bin{:03d}'.format(nbin)
+
+  xv1 = fits.open('data/mean-{}-patfixx-{}.fits'.format(XLINE1, binsuffix))[hdu_name].data
+  xv2 = fits.open('data/mean-{}-patfixx-{}.fits'.format(XLINE2, binsuffix))[hdu_name].data
+  xv = xv1 - xv2
+
+  yv1 = fits.open('data/mean-{}-patfixx-{}.fits'.format(YLINE1, binsuffix))[hdu_name].data
+  yv2 = fits.open('data/mean-{}-patfixx-{}.fits'.format(YLINE2, binsuffix))[hdu_name].data
+  yv = yv1 - yv2
+
+  xb1 = fits.open('data/linesum-{}-{}.fits'.format(XLINE1, binsuffix))[hdu_name].data
+  xb2 = fits.open('data/linesum-{}-{}.fits'.format(XLINE2, binsuffix))[hdu_name].data
+  yb1 = fits.open('data/linesum-{}-{}.fits'.format(YLINE1, binsuffix))[hdu_name].data
+  yb2 = fits.open('data/linesum-{}-{}.fits'.format(YLINE2, binsuffix))[hdu_name].data
+
+  w = xb1 + xb2 + yb1 + yb2 
+  m = (np.isfinite(xv1 + xv2 + yv1 + yv2 + w) &
+       (xv1 != 0.0) & (xv2 != 0.0) & (yv1 != 0.0) & (yv2 != 0.0) & 
+       (xb1 > BMIN*np.nanmedian(xb1)) &
+       (xb2 > BMIN*np.nanmedian(xb2)) &
+       (yb1 > BMIN*np.nanmedian(yb1)) &
+       (yb2 > BMIN*np.nanmedian(yb2)))
+
+  msg = 'Binning {0} x {0}\n{1} map pixels'.format(nbin, m.sum()//(nbin*nbin))
+  xmin, xmax = ymin, ymax = VMIN, VMAX
+
+  H, xedges, yedges = np.histogram2d(xv[m], yv[m], 
+                                     bins=[NBIN, NBIN],
+                                     range=[[xmin, xmax], [ymin, ymax]],
+                                     weights=w[m]
+                                    )
+
+
+  sns.set(style='white', font_scale=1.5, color_codes=True)
+  fig, ax = plt.subplots(figsize=(5, 5))
+  # sns.distplot(xsig[m]**2, kde=False, hist_kws={'range': [0, 1.5*SIGMAX**2]})
+  ax.imshow((H.T)**(1.0/GAMMA), 
+            extent=[xmin, xmax, ymin, ymax], 
+            interpolation='none', aspect='auto', 
+            origin='lower', cmap=plt.cm.gray_r)
+  ax.plot([xmin, xmax], [ymin, ymax], 'r', alpha=0.3, lw=2)
+  ax.text(0.5, 0.98, msg, ha='center', va='top',
+          fontsize='x-small',
+          transform=ax.transAxes)
+  ax.axhline(0.0, ls='--', color='k', lw=0.5)
+  ax.axvline(0.0, ls='--', color='k', lw=0.5)
+  ax.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+  ax.xaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
+  ax.yaxis.set_major_formatter(FormatStrFormatter('%d'))
+  ax.yaxis.set_major_locator(MaxNLocator(4, integer=True, prune='both'))
+  ax.set(
+      xlabel='dV : {} − {}'.format(XLINE1, XLINE2),
+      ylabel='dV : {} − {}'.format(YLINE1, YLINE2),
+      xlim=[xmin, xmax],
+      ylim=[ymin, ymax],
+  )
+  fig.tight_layout()
+  fig.savefig(plotfile, dpi=200)
+#+END_SRC
+
+#+RESULTS: dv-dv-plot
+[[file:hist-dv-4861-5007-dv-6583-6563.png]]
+
+#+CALL: dv-dv-plot(XLINE1="O_III-4959", XLINE2="O_III-5007", YLINE1="N_II-6548", YLINE2="N_II-6583", nbin=32, NBIN=200)
+
+#+RESULTS:
+[[file:hist-dv-4959-5007-dv-6548-6583.png]]
+
+#+CALL: dv-dv-plot(XLINE1="H_I-6563", XLINE2="He_I-6678", YLINE1="H_I-4861", YLINE2="He_I-5876", nbin=32, NBIN=100, VMIN=-10, VMAX=5)
+
+#+RESULTS:
+[[file:hist-dv-6563-6678-dv-4861-5876.png]]
+
+
+
+
+
+* TODO Deviations from Gaussianity
+Taking sums and differences of variance will only work so long as the profiles are Gaussian.  For other shapes, this is not strictly valid.  
+
+Applications to: 
+1. Fine structure profiles.  These are just a collection of dirac deltas, with typical separation say \delta{}u
+   - Explicitly calculate variance as a function of gaussian smoothing \sigma of one of these profiles
+   - I would image it to be sub-linear for \sigma < \delta{}u
+   - But our case is usually \sigma \approx \delta{}u, so we might be OK
+2. Non-thermal profile.  Will not be Gaussian
+3. Instrumental profile.  We can look at the [O I] 5577.34 profile
+4. Undersampling effects.  What variations in the measured sigma can we expect due to the undersampling of the profile.
+   - Calculate how sigma varies as the line center is moved with respect to the pixel center
+* Comments on individual line sets
+
+** H alpha and [N II]
++ We have both the 6583 and 6548 lines
+  + 6583 is slightly broader
+  + Probably because of C II blend
+** H beta and [O III]
++ The instrumental width is a bit larger here
++ But it seems very stable
++ We have the two [O III] lines so we can interpolate to H beta
+** H alpha and He I 6678
++ This might be the ideal combination
++ The overlap in the emission zones is much higher than with [N II] or [O III]
+  + And the T-dependence of the emissivity is very similar
+  + Need to check Ne dependence
+  + We could check this by doing correlations in surface brightness and looking at velocity difference
++ It is a singlet, so there is no fine-structure broadening
++ The difference in atomic weights is a little bit less
+  + H \to He : 1 - 1/4 = 0.75
+  + H \to O : 1 - 1/16 = 0.9375
+  + But that is hardly significant
++ Also s/n is a bit lower since it is a weaker line
+  + But a little binning would fix that
+** H beta and He I 5876
++ This is not so good since He line is triplet
++ But it will be a good independent test
+
+** [Ar III] 7136 versus He I 7065.28
++ This looked the perfect pair
++ The mean velocities and intensities are excellently correlated
++ And the He I line is slightly broader
++ But the damn He I line is a triplet
+  + I get mean wavelength as
+    + (7065.17714 1.55E+07 + 7065.21530 9.32E+06 + 7065.70861 3.10E+06) / (1.55E+07 + 9.32E+06 + 3.10E+06)
+    + 7065.24888814
+  + And sigma is
+    + sqrt(((7065.17714 - 7065.24890)**2 1.55E+07 + (7065.21530 - 7065.24890)**2 9.32E+06 + (7065.70861 - 7065.24890)**2 3.10E+06) / (1.55E+07 + 9.32E+06 + 3.10E+06))
+    + 0.163402256115 Ang
+    + 3e5 0.163402256115 / 7065.24888814 = 6.94 km/s
+  + Thermal sigma should be (1/2) (20/2.3) = 4.35 km/s
+    + So that may be challenging to measure
++ Measurements are about 44.25 vs 42.75 km/s, so quadrature difference is sqrt(44.25**2 - 42.75**2) = 11.42
+  + So that would give difference of sqrt(11.42**2 - 6.94**2) = 9.07, which is too big
+
+
+
+| LAB-WAVL-ANG-AIR- | -SPC- | TT | CONFIGURATION | -TERM-- | J_i-J_k | --A_ki-- | -TPF- | --LEVEL-ENERGY--EV---   | -REF--- |
+|-------------------+-------+----+---------------+---------+---------+----------+-------+-------------------------+---------|
+|        7065.17714 | He I  | E1 | 1s.2p-1s.3s   | 3Po-3S  | 2  -  1 | 1.55E+07 |     3 | 20.964085  -  22.718464 |     112 |
+|        7065.21530 | He I  | E1 | 1s.2p-1s.3s   | 3Po-3S  | 1  -  1 | 9.32E+06 |     3 | 20.964095  -  22.718464 |     112 |
+|        7065.70861 | He I  | E1 | 1s.2p-1s.3s   | 3Po-3S  | 0  -  1 | 3.10E+06 |     3 | 20.964217  -  22.718464 |     112 |
+
+
+** Redder lines
++ We have H I 9229
+  + Intrumental linewidth is a bit better
+  + But only strong option for comparison is [S III] 9069
+  + Which would need correcting for both [S II] /and/ [S IV]
+  + But we could also use H I 9015 to interpolate to 9069 position
+  + *Turns out* that line is contaminated by [Fe II] 9227
+    + But we should be able to remove that easily enough
++ Then there is the [Ar III] 7137, 7751
+  + Which could maybe be compared with H I 8438, etc
+  + But it isn't really until we get to H I 8750 that the data quality is any good
+  + And that is a a long way from [Ar III]
+* Org export options                              :noexport:
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: noexport
+#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:{} arch:headline
+#+OPTIONS: author:t broken-links:nil c:nil creator:nil
+#+OPTIONS: d:(not "LOGBOOK") date:t e:t email:nil f:t inline:t num:nil
+#+OPTIONS: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
+#+OPTIONS: timestamp:t title:t toc:nil todo:t |:t

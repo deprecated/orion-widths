@@ -1,4 +1,5 @@
 import os
+import sys
 from misc_utils import sanitize_string
 from astropy.table import Table
 from matplotlib import pyplot as plt
@@ -12,7 +13,7 @@ linetab = Table.read('basic-line-list.tab', format='ascii.tab')
 
 figfile = 'line-all-wav-grid.pdf'
 
-fig, axes = plt.subplots(20, 8, figsize=(20, 30))
+fig, axes = plt.subplots(33, 8, figsize=(20, 50))
 flaxes = axes.flat
 for row in linetab:
     wav0 = row['wav0']
@@ -22,7 +23,7 @@ for row in linetab:
     try:
         tab = Table.read(sname, format='ascii.tab')
     except FileNotFoundError:
-        print(sname, 'not found')
+        print(sname, 'not found', file=sys.stderr)
         continue
     label = '{} {:.2f}'.format(row['Ion'], wav0)
     netflux = (tab['flux'] - tab['cont'])/tab['cont']
