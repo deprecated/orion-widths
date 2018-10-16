@@ -8,6 +8,16 @@ It looks like the sigmas that I measured from MUSE are good enough to find kinem
 
 ** Status and next steps 
 
+*** [2018-10-15 Mon] Reassessment
++ Delta variance maps (on external disk) are very instructive
+  + 6548-6583 clearly shows the effect of C II line
+  + H I 9229-[S III] 9069 looks really good, but it must be that the H I line is contaminated with something.  Looks like an N I line or similar.
+  + H I 8863-[S III] 9069 perhaps better, but seems to indicate that T=0 in some places
+  + H I 8750-[S III] 9069 is perhaps the best of all.  Except, this gives negative T in some places!
+  + He I 7065 - [Ar III] 7136 looks pretty featureless
+    + But I wonder if the [Ar III] might be contaminated
++ Maybe using FWHM would work better
+  + This would help mitigate the problem of faint blended components
 *** [2017-01-02 Mon] Last gasp
 + The project is getting harder and harder
 *** [2016-12-30 Fri] After twelve days - HIATUS
@@ -2128,7 +2138,7 @@ This is disappointingly circular, implying that the sigma variations for the wea
 #+name: dv-dv-plot
 #+header: :var XLINE1="H_I-4861" XLINE2="O_III-5007"
 #+header: :var YLINE1="N_II-6583" YLINE2="H_I-6563"
-#+header: :var VMIN=-5 VMAX=10 GAMMA=1.0 NBIN=50 nbin=16 BMIN=0.1
+#+header: :var VMIN=-5 VMAX=10 GAMMA=1.0 NBIN=50 nbin=16 BMIN=0.1 DATA=data
 #+BEGIN_SRC python :results file :return plotfile
   import numpy as np
   from astropy.io import fits
@@ -2144,18 +2154,18 @@ This is disappointingly circular, implying that the sigma variations for the wea
 
   binsuffix = 'bin{:03d}'.format(nbin)
 
-  xv1 = fits.open('data/mean-{}-patfixx-{}.fits'.format(XLINE1, binsuffix))[hdu_name].data
-  xv2 = fits.open('data/mean-{}-patfixx-{}.fits'.format(XLINE2, binsuffix))[hdu_name].data
+  xv1 = fits.open(DATA + '/mean-{}-patfixx-{}.fits'.format(XLINE1, binsuffix))[hdu_name].data
+  xv2 = fits.open(DATA + '/mean-{}-patfixx-{}.fits'.format(XLINE2, binsuffix))[hdu_name].data
   xv = xv1 - xv2
 
-  yv1 = fits.open('data/mean-{}-patfixx-{}.fits'.format(YLINE1, binsuffix))[hdu_name].data
-  yv2 = fits.open('data/mean-{}-patfixx-{}.fits'.format(YLINE2, binsuffix))[hdu_name].data
+  yv1 = fits.open(DATA + '/mean-{}-patfixx-{}.fits'.format(YLINE1, binsuffix))[hdu_name].data
+  yv2 = fits.open(DATA + '/mean-{}-patfixx-{}.fits'.format(YLINE2, binsuffix))[hdu_name].data
   yv = yv1 - yv2
 
-  xb1 = fits.open('data/linesum-{}-{}.fits'.format(XLINE1, binsuffix))[hdu_name].data
-  xb2 = fits.open('data/linesum-{}-{}.fits'.format(XLINE2, binsuffix))[hdu_name].data
-  yb1 = fits.open('data/linesum-{}-{}.fits'.format(YLINE1, binsuffix))[hdu_name].data
-  yb2 = fits.open('data/linesum-{}-{}.fits'.format(YLINE2, binsuffix))[hdu_name].data
+  xb1 = fits.open(DATA + '/linesum-{}-{}.fits'.format(XLINE1, binsuffix))[hdu_name].data
+  xb2 = fits.open(DATA + '/linesum-{}-{}.fits'.format(XLINE2, binsuffix))[hdu_name].data
+  yb1 = fits.open(DATA + '/linesum-{}-{}.fits'.format(YLINE1, binsuffix))[hdu_name].data
+  yb2 = fits.open(DATA + '/linesum-{}-{}.fits'.format(YLINE2, binsuffix))[hdu_name].data
 
   w = xb1 + xb2 + yb1 + yb2 
   m = (np.isfinite(xv1 + xv2 + yv1 + yv2 + w) &
@@ -2215,6 +2225,10 @@ This is disappointingly circular, implying that the sigma variations for the wea
 #+RESULTS:
 [[file:hist-dv-6563-6678-dv-4861-5876.png]]
 
+#+CALL: dv-dv-plot(XLINE1="Ar_III-7136", XLINE2="He_I-7065", YLINE1="H_I-9229", YLINE2="S_III-9069", nbin=32, NBIN=100, VMIN=-10, VMAX=5, DATA="/Users/will/tmp/musedata")
+
+#+RESULTS:
+[[file:hist-dv-7136-7065-dv-9229-9069.png]]
 
 
 
